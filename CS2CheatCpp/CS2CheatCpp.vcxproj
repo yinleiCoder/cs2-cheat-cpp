@@ -153,7 +153,7 @@
     <ClCompile Include="dependencies\ImGui\imgui_tables.cpp" />
     <ClCompile Include="dependencies\ImGui\imgui_widgets.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\memory.cpp" />
+    <ClCompile Include="src\memory\memory.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dependencies\ImGui\imconfig.h" />
@@ -164,7 +164,8 @@
     <ClInclude Include="dependencies\ImGui\imstb_rectpack.h" />
     <ClInclude Include="dependencies\ImGui\imstb_textedit.h" />
     <ClInclude Include="dependencies\ImGui\imstb_truetype.h" />
-    <ClInclude Include="src\memory.h" />
+    <ClInclude Include="src\bone.hpp" />
+    <ClInclude Include="src\memory\memory.h" />
     <ClInclude Include="src\render.h" />
     <ClInclude Include="src\vector.h" />
   </ItemGroup>

@@ -44,26 +44,38 @@ struct Vector3
 		return Vector3{ x / other.x, y / other.y, z / other.z };
 	}
 
-	Vector3 WorldConvertToScreen(view_matrix_t matrix) const
+	constexpr const Vector3& operator/(const float  factor) const noexcept
 	{
-		float _x = matrix[0][0] * x + matrix[0][1] * y + matrix[0][2] * z + matrix[0][3];
-		float _y = matrix[1][0] * x + matrix[1][1] * y + matrix[1][2] * z + matrix[1][3];
-		float w = matrix[3][0] * x + matrix[3][1] * y + matrix[3][2] * z + matrix[3][3];
+		return Vector3{ x / factor, y / factor, z / factor };
+	}
+
+	constexpr const Vector3& operator*(const float  factor) const noexcept
+	{
+		return Vector3{ x * factor, y * factor, z * factor };
+	}
+
+	const static bool WorldConvertToScreen(view_matrix_t matrix, Vector3& in, Vector3& out)
+	{
+		out.x= matrix[0][0] * in.x + matrix[0][1] * in.y + matrix[0][2] * in.z + matrix[0][3];
+		out.y = matrix[1][0] * in.x + matrix[1][1] * in.y + matrix[1][2] * in.z + matrix[1][3];
+		float w = matrix[3][0] * in.x + matrix[3][1] * in.y + matrix[3][2] * in.z + matrix[3][3];
 
 		if (w<0.01f) {
 			return false;
 		}
 
 		float inv_w = 1.f / w;
-		_x *= inv_w;
-		_y *= inv_w;
+		out.x *= inv_w;
+		out.y *= inv_w;
 
 		float x = screenWidth / 2;
 		float y = screenHeight / 2;
 		
-		x += 0.5f * _x * screenWidth + 0.5f;
-		y -= 0.5f * _y * screenHeight + 0.5f;
+		x += 0.5f * out.x * screenWidth + 0.5f;
+		y -= 0.5f * out.y * screenHeight + 0.5f;
 
-		return { x, y, w };
+		out.x = x;
+		out.y = y;
+		return true;
 	}
 };

@@ -6,9 +6,10 @@
 #include "../dependencies/ImGui/imgui.h"
 #include "../dependencies/ImGui/imgui_impl_dx11.h"
 #include "../dependencies/ImGui/imgui_impl_win32.h"
-#include "memory.h"
+#include "memory/memory.h"
 #include "vector.h"
 #include "render.h"
+#include "bone.hpp"
 
 namespace offsets {
 	// offsets.hpp
@@ -232,23 +233,66 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (pCSPlayerPawn == localPlayer) {
 				continue;
 			}
+			uintptr_t gameScene = mem.Read<uintptr_t>(pCSPlayerPawn + 0x310);
+			uintptr_t boneArray = mem.Read<uintptr_t>(gameScene + 0x160 + 0x80);
+
 			Vector3 origin = mem.Read<Vector3>(pCSPlayerPawn+offsets::m_vOldOrigin);
 			Vector3 head = { origin.x, origin.y, origin.z + 75.f };
-			Vector3 screenPos = origin.WorldConvertToScreen(view_matrix);
-			Vector3 screenHead = head.WorldConvertToScreen(view_matrix);
-
-			float height = screenPos.y - screenHead.y;
-			float width = height / 2.4f;
+			//Vector3 head = mem.Read<Vector3>(boneArray + bones::head * 32);
+			Vector3 screenPos;
+			Vector3 screenHead;
+			float headHeight = (screenPos.y - screenHead.y) / 8;
 
 			RGB enemy = { 255, 0, 0 };
-			Render::DrawRect(
-				screenHead.x - width /2,
+			RGB bone = { 255, 255, 255 };
+			RGB hp = { 0, 255, 0 };
+
+			if (Vector3::WorldConvertToScreen(view_matrix, origin, screenPos) &&
+				Vector3::WorldConvertToScreen(view_matrix, head, screenHead) &&
+				origin.x != 0) {
+				float height = screenPos.y - screenHead.y;
+				float width = height / 2.4f;
+					Render::DrawRect(
+						screenHead.x - width /2,
+						screenHead.y,
+						width,
+						height,
+						enemy,
+						1.5,
+						false,
+						255
+					);
+
+					Render::DrawRect(
+						screenHead.x - (width / 2 + 10),
+						screenHead.y + (height * (100 - health) / 100),
+						2,
+						height - (height * (100 - health) / 100),
+						hp,
+						1.5,
+						true,
+						255
+					);
+			}
+			/*Render::Circle(
+				screenHead.x,
 				screenHead.y,
-				width,
-				height,
-				enemy,
-				1.5
+				headHeight - 3,
+				bone
 			);
+
+			for (int i = 0; i < sizeof(boneConnections) / sizeof(boneConnections[0]); i++) {
+				int bone1 = boneConnections[i].bone1;
+				int bone2 = boneConnections[i].bone2;
+
+				Vector3 vectorBone1 = mem.Read<Vector3>(boneArray + bone1*32);
+				Vector3 vectorBone2 = mem.Read<Vector3>(boneArray + bone2*32);
+
+				Vector3 b1 = vectorBone1.WorldConvertToScreen(view_matrix);
+				Vector3 b2 = vectorBone1.WorldConvertToScreen(view_matrix);
+
+				Render::Line(b1.x, b1.y, b2.x, b2.y, bone, 2.0);
+			}*/
 		}
 
 		ImGui::Render();

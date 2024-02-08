@@ -18,7 +18,7 @@
     <ClCompile Include="src\main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\memory.cpp">
+    <ClCompile Include="src\memory\memory.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="dependencies\ImGui\imgui.cpp">
@@ -44,7 +44,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\memory.h">
+    <ClInclude Include="src\memory\memory.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\vector.h">
@@ -75,6 +75,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\render.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\bone.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
