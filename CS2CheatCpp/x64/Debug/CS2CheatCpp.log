@@ -1,0 +1,30 @@
+﻿  main.cpp
+D:\VisualStudio2022\Community\VC\Tools\MSVC\14.38.33130\include\numbers(11): warning STL4038: The contents of <numbers> are available only with C++20 or later.
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(61,11): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(62,11): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,53): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,50): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,73): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,66): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,99): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(250,5): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(248,5): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(247,5): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(246,15): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(245,18): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(63): warning C4715: “window_procedure”: 不是所有的控件路径都返回值
+  CS2CheatCpp.vcxproj -> E:\VisualStudioProjects\CS2CheatCpp\x64\Debug\CS2CheatCpp.exe

@@ -1,0 +1,34 @@
+﻿  main.cpp
+D:\VisualStudio2022\Community\VC\Tools\MSVC\14.38.33130\include\numbers(11): warning STL4038: The contents of <numbers> are available only with C++20 or later.
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(61,11): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(62,11): warning C4244: “初始化”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,53): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,50): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,73): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,66): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(18,99): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  (编译源文件“src/main.cpp”)
+  
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(246,5): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(244,5): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(243,5): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(242,15): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(241,18): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+  正在生成代码
+  1 of 1304 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    12 functions had inline decision re-evaluated but remain unchanged
+  已完成代码的生成
+  CS2CheatCpp.vcxproj -> E:\VisualStudioProjects\CS2CheatCpp\x64\Release\CS2CheatCpp.exe
