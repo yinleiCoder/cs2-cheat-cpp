@@ -13,9 +13,9 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17262D8;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B0FB8;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19102A0;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17262E8;
+	constexpr std::ptrdiff_t dwEntityList = 0x18B0FC8;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19102B0;
 	// client.dll.hpp 
 	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
 	constexpr std::ptrdiff_t m_hPlayerPawn = 0x7E4; // CHandle<C_CSPlayerPawn>
@@ -247,6 +247,10 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			RGB bone = { 255, 255, 255 };
 			RGB hp = { 0, 255, 0 };
 
+			if (!mem.InForeground()) {
+				continue;
+			}
+
 			if (Vector3::WorldConvertToScreen(view_matrix, origin, screenPos) &&
 				Vector3::WorldConvertToScreen(view_matrix, head, screenHead) &&
 				origin.x != 0) {
@@ -328,4 +332,3 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	return 0;
 }
-

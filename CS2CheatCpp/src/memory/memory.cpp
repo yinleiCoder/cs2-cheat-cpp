@@ -1,6 +1,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "memory.h"
-#include <TlHelp32.h>
+#include "handle_hijack.h"
 
 Memory::Memory(const char* processName)
 {
@@ -13,7 +13,11 @@ Memory::Memory(const char* processName)
 		if (!strcmp(processName, entry.szExeFile))
 		{
 			this->processId = entry.th32ProcessID;
-			this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);
+			//this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);
+			this->process = hj::HijackExistingHandle(this->processId);
+			if (!hj::IsHandleValid(this->process)) {
+				this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);
+			}
 			break;
 		}
 	}
@@ -28,6 +32,10 @@ Memory::~Memory()
 	if (this->process)
 	{
 		CloseHandle(this->process);
+	}
+	if (hj::HijackedHandle)
+	{
+		CloseHandle(hj::HijackedHandle);
 	}
 }
 
@@ -63,4 +71,17 @@ uintptr_t Memory::GetModuleAddress(const char* moduleName)
 		CloseHandle(snapShot);
 	}
 	return result;
+}
+
+bool Memory::InForeground()
+{
+	HWND current = GetForegroundWindow();
+
+	char title[256];
+	GetWindowText(current, title, sizeof(title));
+
+	if (strstr(title, "·´¿Ö¾«Ó¢") != nullptr || strstr(title, "Counter") != nullptr) {
+		return true;
+	}
+	return false;
 }

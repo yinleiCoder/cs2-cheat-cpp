@@ -1,7 +1,8 @@
 #pragma once
-#pragma once
 #include <iostream>
 #include <Windows.h>
+#include <TlHelp32.h>
+#include <Psapi.h> 
 
 class Memory
 {
@@ -17,6 +18,8 @@ public:
 	HANDLE GetProcessHandle();
 
 	uintptr_t GetModuleAddress(const char* moduleName);
+
+	bool InForeground();
 
 	template<typename T>
 	T Read(uintptr_t address)

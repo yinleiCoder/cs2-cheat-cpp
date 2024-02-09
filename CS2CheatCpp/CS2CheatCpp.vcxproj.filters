@@ -80,5 +80,8 @@
     <ClInclude Include="src\bone.hpp">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\memory\handle_hijack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
