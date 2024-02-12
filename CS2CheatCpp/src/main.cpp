@@ -1,8 +1,8 @@
 ﻿#include <Windows.h>
-#include <thread>
 #include <dwmapi.h>
 #include <d3d11.h>
 #include <windowsx.h>
+#include <thread>
 #include "../dependencies/ImGui/imgui.h"
 #include "../dependencies/ImGui/imgui_impl_dx11.h"
 #include "../dependencies/ImGui/imgui_impl_win32.h"
@@ -57,10 +57,11 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM w_param, LPA
 	case WM_DESTROY:
 	{
 		PostQuitMessage(0);
-		return 0;
+		return 0L;
 	}
 	return DefWindowProc(window, message, w_param, l_param);
 	}
+	return DefWindowProc(window, message, w_param, l_param);
 }
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
@@ -169,7 +170,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 	UpdateWindow(overlay);
 
 	ImGui::CreateContext();
-	ImGui::StyleColorsClassic();
+	ImGui::StyleColorsDark();
 
 	ImGui_ImplWin32_Init(overlay);
 	ImGui_ImplDX11_Init(device, device_context);
@@ -178,7 +179,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	while (running) 
 	{
-		/*MSG msg;
+		MSG msg;
 		while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
@@ -188,7 +189,12 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 		if (!running) {
 			break;
-		}*/
+		}
+
+		// ImGui渲染
+		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
 
 		// 处理外挂业务逻辑: 获取相关数据的地址
 		uintptr_t localPlayer = mem.Read<uintptr_t>(client+offsets::dwLocalPlayerPawn);
@@ -196,11 +202,6 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client+offsets::dwViewMatrix);
 		uintptr_t enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
 		int localTeam = mem.Read<int>(localPlayer+offsets::m_iTeamNum);
-
-		// ImGui渲染
-		ImGui_ImplDX11_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
 
 		// 处理外挂业务逻辑: 
 		for (int playerIndex = 1; playerIndex < 32; ++playerIndex)
@@ -300,13 +301,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		ImGui::Render();
-		float color[4]{0, 0, 0, 0};
+		constexpr float color[4]{0.f, 0.f, 0.f, 0.f};
 		device_context->OMSetRenderTargets(1U, &render_target_view, nullptr);
 		device_context->ClearRenderTargetView(render_target_view, color);
 
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
-		swap_chain->Present(0U, 0u);
+		swap_chain->Present(1U, 0U);
 	}
 
 	ImGui_ImplDX11_Shutdown();
