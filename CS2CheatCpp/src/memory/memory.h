@@ -3,6 +3,8 @@
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <Psapi.h> 
+#include <string>
+#include <vector>
 
 class Memory
 {
@@ -27,6 +29,14 @@ public:
 		T value;
 		ReadProcessMemory(this->process, (LPCVOID)address, &value, sizeof(T), nullptr);
 		return value;
+	}
+
+	template<std::size_t N>
+	std::string ReadString(std::uintptr_t address) 
+	{
+		std::vector<char> buffer(N);
+		ReadProcessMemory(this->process, reinterpret_cast<LPCVOID>(address), buffer.data(), N, nullptr);
+		return std::string(buffer.data());
 	}
 
 	template<typename T>

@@ -1,4 +1,6 @@
 ﻿#include <thread>
+#include <string>
+#include <iostream>
 #include "gui.h"
 #include "memory/memory.h"
 #include "vector.h"
@@ -20,6 +22,9 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float
 	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t
 	constexpr std::ptrdiff_t m_flDetectedByEnemySensorTime = 0x1440; // GameTime_t
+	constexpr std::ptrdiff_t m_iszPlayerName = 0x638; // char[128]
+	constexpr std::ptrdiff_t m_entitySpottedState = 0x1698; // EntitySpottedState_t C_CSPlayerPawnBase 
+	constexpr std::ptrdiff_t m_bSpotted = 0x8; // bool
 }
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
@@ -85,7 +90,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (!player) {
 				continue;
 			}
+			// 通过currentController获取团队编号等信息
 			int playerTeam = mem.Read<int>(player+offsets::m_iTeamNum);
+			const auto playerName = mem.ReadString<128>(player + offsets::m_iszPlayerName);
 	/*		if (playerTeam == localTeam) {
 				continue; // 队友
 			}*/
@@ -106,6 +113,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (health <= 0 || health > 100) {
 				continue;
 			}
+			// 获取雷达状态并设置敌人显示在雷达上
+			bool spotted = mem.Read<bool>(player + offsets::m_entitySpottedState + offsets::m_bSpotted);
+			mem.Write<bool>(player + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
 			// 玩家发光
 			mem.Write<float>(currentPawn+offsets::m_flDetectedByEnemySensorTime, 86400);
 			// 骨骼绘制
