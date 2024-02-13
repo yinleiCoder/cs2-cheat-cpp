@@ -10,17 +10,26 @@ namespace offsets {
 	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17272E8;
 	constexpr std::ptrdiff_t dwEntityList = 0x18B1FE8;
 	constexpr std::ptrdiff_t dwViewMatrix = 0x19112D0;
+	constexpr std::ptrdiff_t dwForceJump = 0x1720670;
+
 	// client.dll.hpp 
 	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
 	constexpr std::ptrdiff_t m_hPlayerPawn = 0x7E4; // CHandle<C_CSPlayerPawn>
 	constexpr std::ptrdiff_t m_iTeamNum = 0x3CB; // uint8_t
 	constexpr std::ptrdiff_t m_vOldOrigin = 0x127C; // Vector
+	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float
+	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t
 }
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 {
 	auto mem = Memory("cs2.exe");
 	const auto client = mem.GetModuleAddress("client.dll");
+
+	const unsigned int STANDING = 65665;// 站立
+	const unsigned int CROUCHING = 65667;// 蹲伏
+	const unsigned int PLUS_JUMP = 65537;// +jump
+	const unsigned int MINUS_JUMP = 256;// -jump
 
 	gui::CreateHWindow("csgo", "yinlei", instance, cmd_show);
 	gui::CreateDevice();
@@ -35,47 +44,71 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		gui::Render();
 
 		// 处理外挂业务逻辑: 获取相关数据的地址
-		uintptr_t localPlayer = mem.Read<uintptr_t>(client+offsets::dwLocalPlayerPawn);
+		const auto localPlayer = mem.Read<uintptr_t>(client+offsets::dwLocalPlayerPawn);
 		Vector3 localOrigin = mem.Read<Vector3>(localPlayer+offsets::m_vOldOrigin);
-		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client+offsets::dwViewMatrix);
-		uintptr_t enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
 		int localTeam = mem.Read<int>(localPlayer+offsets::m_iTeamNum);
+		float flashDuration = mem.Read<float>(localPlayer+offsets::m_flFlashBangTime);
+		const auto fFlag = mem.Read<unsigned int>(localPlayer+offsets::m_fFlags);
+		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client+offsets::dwViewMatrix);
+		const auto enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
 
-		// 处理外挂业务逻辑: 
-		for (int playerIndex = 1; playerIndex < 32; ++playerIndex)
+		// 防闪光弹
+		if (flashDuration > 0)
 		{
-			uintptr_t list_entry = mem.Read<uintptr_t>(enity_list +(8*(playerIndex & 0x7FFF) >> 9)+16);
+			mem.Write<float>(localPlayer + offsets::m_flFlashBangTime, 0);
+		}
+
+		// 兔子连跳
+		if (GetAsyncKeyState(VK_SPACE)) 
+		{
+			if (fFlag == STANDING || fFlag == CROUCHING)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				mem.Write<unsigned int>(client+offsets::dwForceJump, PLUS_JUMP);
+			}
+			else
+			{
+				mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
+			}
+		}
+
+		// 处理外挂业务逻辑: 根据entityList找到currentPawn、currentController获取相关玩家信息，currentController下有pawnHandle，通过pawnHandle得到currentPawn
+		for (int playerIndex = 1; playerIndex < 64; ++playerIndex)
+		{
+			const auto list_entry = mem.Read<uintptr_t>(enity_list +(8*(playerIndex & 0x7FFF) >> 9)+16);
 			if (!list_entry) {
 				continue;
 			}
-			uintptr_t player = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));
+			// 得到currentController
+			const auto player = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));
 			if (!player) {
 				continue;
 			}
 			int playerTeam = mem.Read<int>(player+offsets::m_iTeamNum);
-			if (playerTeam == localTeam) {
-				continue;
-			}
-			uint32_t playerPawn = mem.Read<uint32_t>(player+offsets::m_hPlayerPawn);
-			uintptr_t list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawn & 0x7FFF) >> 9) + 16);
+	/*		if (playerTeam == localTeam) {
+				continue; // 队友
+			}*/
+			// 通过currentController得到pawnHandle
+			const auto playerPawn = mem.Read<uint32_t>(player+offsets::m_hPlayerPawn);
+			// 通过pawnHandle得到currentPawn
+			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawn & 0x7FFF) >> 9) + 16);// 16==0x10
 			if (!list_entry2) {
 				continue;
 			}
-			uintptr_t pCSPlayerPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawn & 0x1FF));
-			if (!pCSPlayerPawn) {
+			// 拿到了currentPawn
+			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawn & 0x1FF));// 120==0x78
+			if (!currentPawn || currentPawn == localPlayer) {
 				continue;
 			}
-			int health = mem.Read<int>(pCSPlayerPawn+offsets::m_iHealth);
+			// currentPawn有生命值等信息,而玩家姓名在currentController下
+			int health = mem.Read<int>(currentPawn+offsets::m_iHealth);
 			if (health <= 0 || health > 100) {
 				continue;
 			}
-			if (pCSPlayerPawn == localPlayer) {
-				continue;
-			}
-			uintptr_t gameScene = mem.Read<uintptr_t>(pCSPlayerPawn + 0x310);
-			uintptr_t boneArray = mem.Read<uintptr_t>(gameScene + 0x160 + 0x80);
+			const auto gameScene = mem.Read<uintptr_t>(currentPawn + 0x310);
+			const auto boneArray = mem.Read<uintptr_t>(gameScene + 0x160 + 0x80);
 
-			Vector3 origin = mem.Read<Vector3>(pCSPlayerPawn+offsets::m_vOldOrigin);
+			Vector3 origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
 			Vector3 head = { origin.x, origin.y, origin.z + 75.f };
 			//Vector3 head = mem.Read<Vector3>(boneArray + bones::head * 32);
 			Vector3 screenPos;
@@ -86,6 +119,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			RGB bone = { 255, 255, 255 };
 			RGB hp = { 0, 255, 0 };
 
+			// 如果不是CS2游戏在前台就不绘制
 			if (!mem.InForeground()) {
 				continue;
 			}
