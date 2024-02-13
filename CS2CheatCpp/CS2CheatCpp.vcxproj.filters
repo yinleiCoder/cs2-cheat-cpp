@@ -42,6 +42,9 @@
     <ClCompile Include="dependencies\ImGui\imgui_widgets.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\gui.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\memory\memory.h">
@@ -81,6 +84,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="src\memory\handle_hijack.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\gui.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

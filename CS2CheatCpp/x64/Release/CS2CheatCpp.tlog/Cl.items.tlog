@@ -5,5 +5,6 @@ E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\dependencies\ImGui\imgui_impl_dx
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\dependencies\ImGui\imgui_impl_win32.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\imgui_impl_win32.obj
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\dependencies\ImGui\imgui_tables.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\imgui_tables.obj
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\dependencies\ImGui\imgui_widgets.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\imgui_widgets.obj
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\gui.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\gui.obj
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\main.obj
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\memory\memory.cpp;E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\x64\Release\memory.obj

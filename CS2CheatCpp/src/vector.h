@@ -54,7 +54,7 @@ struct Vector3
 		return Vector3{ x * factor, y * factor, z * factor };
 	}
 
-	const static bool WorldConvertToScreen(view_matrix_t matrix, Vector3& in, Vector3& out)
+	const static bool word_to_screen(view_matrix_t matrix, Vector3& in, Vector3& out)
 	{
 		out.x= matrix[0][0] * in.x + matrix[0][1] * in.y + matrix[0][2] * in.z + matrix[0][3];
 		out.y = matrix[1][0] * in.x + matrix[1][1] * in.y + matrix[1][2] * in.z + matrix[1][3];

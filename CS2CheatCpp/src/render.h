@@ -1,4 +1,7 @@
 #pragma once
+#include "../dependencies/ImGui/imgui.h"
+#include "../dependencies/ImGui/imgui_impl_dx11.h"
+#include "../dependencies/ImGui/imgui_impl_win32.h"
 
 typedef struct
 {

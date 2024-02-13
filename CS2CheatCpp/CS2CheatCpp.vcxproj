@@ -154,6 +154,7 @@
     <ClCompile Include="dependencies\ImGui\imgui_impl_win32.cpp" />
     <ClCompile Include="dependencies\ImGui\imgui_tables.cpp" />
     <ClCompile Include="dependencies\ImGui\imgui_widgets.cpp" />
+    <ClCompile Include="src\gui.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\memory\memory.cpp" />
   </ItemGroup>
@@ -167,6 +168,7 @@
     <ClInclude Include="dependencies\ImGui\imstb_textedit.h" />
     <ClInclude Include="dependencies\ImGui\imstb_truetype.h" />
     <ClInclude Include="src\bone.hpp" />
+    <ClInclude Include="src\gui.h" />
     <ClInclude Include="src\memory\handle_hijack.h" />
     <ClInclude Include="src\memory\memory.h" />
     <ClInclude Include="src\render.h" />
