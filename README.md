@@ -6,10 +6,21 @@
 
 - 方框透视
 - 骨骼透视
+- 人物身体发光
 - 实时显示血条
 - 防闪光弹
 - 连跳
 - 绕过VAC反作弊系统(用户模式句柄劫持，非DMA和内核)
+
+## Usage
+
+See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for decorated Changelogs. Reading the changelogs is a good way to keep up to date with the things `CS2CheatCPP` has to offer, and maybe will give you ideas of some features that you've been ignoring until now!
+
+## Thanks
+
+请作者喝杯咖啡？感谢您的支持！
+
+![wechat](./wechat.jpg)
 
 ## Notices
 

@@ -19,6 +19,7 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_vOldOrigin = 0x127C; // Vector
 	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float
 	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t
+	constexpr std::ptrdiff_t m_flDetectedByEnemySensorTime = 0x1440; // GameTime_t
 }
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
@@ -75,12 +76,12 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		// 处理外挂业务逻辑: 根据entityList找到currentPawn、currentController获取相关玩家信息，currentController下有pawnHandle，通过pawnHandle得到currentPawn
 		for (int playerIndex = 1; playerIndex < 64; ++playerIndex)
 		{
-			const auto list_entry = mem.Read<uintptr_t>(enity_list +(8*(playerIndex & 0x7FFF) >> 9)+16);
+			const auto list_entry = mem.Read<uintptr_t>(enity_list +(8*(playerIndex & 0x7FFF) >> 9)+16);// 16==0x10
 			if (!list_entry) {
 				continue;
 			}
 			// 得到currentController
-			const auto player = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));
+			const auto player = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
 			if (!player) {
 				continue;
 			}
@@ -89,14 +90,14 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 				continue; // 队友
 			}*/
 			// 通过currentController得到pawnHandle
-			const auto playerPawn = mem.Read<uint32_t>(player+offsets::m_hPlayerPawn);
+			const auto playerPawnHandle = mem.Read<uint32_t>(player+offsets::m_hPlayerPawn);
 			// 通过pawnHandle得到currentPawn
-			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawn & 0x7FFF) >> 9) + 16);// 16==0x10
+			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawnHandle & 0x7FFF) >> 9) + 16);// 16==0x10
 			if (!list_entry2) {
 				continue;
 			}
 			// 拿到了currentPawn
-			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawn & 0x1FF));// 120==0x78
+			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
 			if (!currentPawn || currentPawn == localPlayer) {
 				continue;
 			}
@@ -105,6 +106,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (health <= 0 || health > 100) {
 				continue;
 			}
+			// 玩家发光
+			mem.Write<float>(currentPawn+offsets::m_flDetectedByEnemySensorTime, 86400);
+			// 骨骼绘制
 			const auto gameScene = mem.Read<uintptr_t>(currentPawn + 0x310);
 			const auto boneArray = mem.Read<uintptr_t>(gameScene + 0x160 + 0x80);
 
