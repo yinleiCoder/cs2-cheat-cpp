@@ -14,6 +14,7 @@ public:
 	unsigned int fFlag;
 	unsigned int lifeState;
 	int entIndex;
+	Vector3 head;
 	Vector3 origin;
 	Vector3 viewOffset;
 	float distance;

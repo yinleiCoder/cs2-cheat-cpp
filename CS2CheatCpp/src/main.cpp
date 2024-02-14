@@ -34,6 +34,8 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_iIDEntIndex = 0x15A4; // CEntityIndex
 	constexpr std::ptrdiff_t m_vecViewOffset = 0xC58; // CNetworkViewOffsetVector
 	constexpr std::ptrdiff_t m_lifeState = 0x338; // uint8_t
+	constexpr std::ptrdiff_t m_pGameSceneNode = 0x318; // CGameSceneNode*
+	constexpr std::ptrdiff_t m_modelState = 0x160; // CModelState
 }
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
@@ -113,9 +115,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			int team = mem.Read<int>(currentController+offsets::m_iTeamNum);
 			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
 
-			//if (team == localPlayer.team) {
-			//	continue; // 队友
-			//}
+			if (team == localPlayer.team) {
+				continue; // 队友
+			}
 
 			// 通过currentController得到pawnHandle
 			const auto playerPawnHandle = mem.Read<uint32_t>(currentController+offsets::m_hPlayerPawn);
@@ -140,7 +142,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			mem.Write<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
 			// 玩家发光
 			mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
-
+			
 			Entity entity;
 			entity.name = playerName;
 			entity.pawnAddress = currentPawn;
@@ -151,14 +153,16 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			entity.origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
 			entity.viewOffset = mem.Read<Vector3>(currentPawn+offsets::m_vecViewOffset);
 			entity.distance = Vector3::distance(entity.origin, localPlayer.origin);
-			entities.push_back(entity);
 
 			// 骨骼绘制
-			const auto gameScene = mem.Read<uintptr_t>(currentPawn + 0x310);
-			const auto boneArray = mem.Read<uintptr_t>(gameScene + 0x160 + 0x80);
+			// 获取玩家的头坐标实现锁头
+			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
+			const auto boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
+			//Vector3 head = { entity.origin.x, entity.origin.y, entity.origin.z + 75.f };
+			entity.head = mem.Read<Vector3>(boneMatrix + bones::head * 32);
 
-			Vector3 head = { entity.origin.x, entity.origin.y, entity.origin.z + 75.f };
-			//Vector3 head = mem.Read<Vector3>(boneArray + bones::head * 32);
+			entities.push_back(entity);
+
 			Vector3 screenPos;
 			Vector3 screenHead;
 			float headHeight = (screenPos.y - screenHead.y) / 8;
@@ -173,7 +177,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}
 
 			if (Vector3::word_to_screen(view_matrix, entity.origin, screenPos) &&
-				Vector3::word_to_screen(view_matrix, head, screenHead) &&
+				Vector3::word_to_screen(view_matrix, entity.head, screenHead) &&
 				entity.origin.x != 0) {
 				float height = screenPos.y - screenHead.y;
 				float width = height / 2.4f;
@@ -224,12 +228,12 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			return entity1.distance < entity2.distance;
 		});
 
-		// 自瞄并开枪
+		// 自瞄锁头并开枪
 		if (entities.size() > 0 && (GetAsyncKeyState('E') & 0x8000))
 		{
 			Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
 			Vector3 entityView = entities[0].origin + entities[0].viewOffset;
-			Vector3 newAngles = Vector3::angles(playerView, entityView);
+			Vector3 newAngles = Vector3::angles(playerView, entities[0].head);
 			Vector3 newAnglesVec3{newAngles.y, newAngles.x, 0.0f};
 			mem.Write<Vector3>(client+offsets::dwViewAngles, newAnglesVec3);
 
