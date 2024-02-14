@@ -89,5 +89,8 @@
     <ClInclude Include="src\gui.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="src\entity.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -168,6 +168,7 @@
     <ClInclude Include="dependencies\ImGui\imstb_textedit.h" />
     <ClInclude Include="dependencies\ImGui\imstb_truetype.h" />
     <ClInclude Include="src\bone.hpp" />
+    <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\gui.h" />
     <ClInclude Include="src\memory\handle_hijack.h" />
     <ClInclude Include="src\memory\memory.h" />

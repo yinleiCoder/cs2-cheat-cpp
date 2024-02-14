@@ -54,6 +54,28 @@ struct Vector3
 		return Vector3{ x * factor, y * factor, z * factor };
 	}
 
+	static float distance(const Vector3& from, const Vector3& to)
+	{
+		Vector3 res = from - to;
+		return std::sqrt(res.x*res.x + res.y*res.y+res.z*res.z);
+	}
+
+	static Vector3 angles(const Vector3& from, const Vector3& to)
+	{
+		float yaw;
+		float pitch;
+
+		float deltaX = to.x - from.x;
+		float deltaY = to.y - from.y;
+
+		yaw = std::atan2(deltaY, deltaX) * 180.0 / std::numbers::pi;
+
+		float deltaZ = to.z - from.z;
+		double distance = std::sqrt(std::pow(deltaX, 2) + std::pow(deltaY, 2));
+		pitch = -(std::atan2(deltaZ, distance) * 180.0 / std::numbers::pi);
+		return {yaw, pitch, 0};
+	}
+
 	const static bool word_to_screen(view_matrix_t matrix, Vector3& in, Vector3& out)
 	{
 		out.x= matrix[0][0] * in.x + matrix[0][1] * in.y + matrix[0][2] * in.z + matrix[0][3];
