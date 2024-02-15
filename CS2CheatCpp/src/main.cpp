@@ -13,19 +13,19 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17272E8;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B1FE8;
-	constexpr std::ptrdiff_t dwViewAngles = 0x191F100;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19112D0;
-	constexpr std::ptrdiff_t dwForceJump = 0x1720670;
-	constexpr std::ptrdiff_t dwForceAttack = 0x1720160;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17282B8;
+	constexpr std::ptrdiff_t dwEntityList = 0x18B3018;
+	constexpr std::ptrdiff_t dwViewAngles = 0x1920150;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x1912320;
+	constexpr std::ptrdiff_t dwForceJump = 0x1721650;
+	constexpr std::ptrdiff_t dwForceAttack = 0x1721140;
 
 	// client.dll.hpp 
 	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
 	constexpr std::ptrdiff_t m_hPlayerPawn = 0x7E4; // CHandle<C_CSPlayerPawn>
 	constexpr std::ptrdiff_t m_iTeamNum = 0x3CB; // uint8_t
 	constexpr std::ptrdiff_t m_vOldOrigin = 0x127C; // Vector
-	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float
+	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float C_CSPlayerPawnBase { // C_BasePlayerPawn
 	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t
 	constexpr std::ptrdiff_t m_flDetectedByEnemySensorTime = 0x1440; // GameTime_t
 	constexpr std::ptrdiff_t m_iszPlayerName = 0x638; // char[128]
@@ -36,7 +36,17 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_lifeState = 0x338; // uint8_t
 	constexpr std::ptrdiff_t m_pGameSceneNode = 0x318; // CGameSceneNode*
 	constexpr std::ptrdiff_t m_modelState = 0x160; // CModelState
+	constexpr std::ptrdiff_t m_aimPunchAngle = 0x177C; // QAngle  C_CSPlayerPawn { // C_CSPlayerPawnBase
+	constexpr std::ptrdiff_t m_iShotsFired = 0x147C; // int32_t C_CSPlayerPawnBase { // C_BasePlayerPawn
+	constexpr std::ptrdiff_t m_aimPunchCache = 0x17A0; // CUtlVector<QAngle>
+	constexpr std::ptrdiff_t v_angle = 0x11A4; // QAngle
 }
+
+struct C_UTL_VECTOR
+{
+	DWORD_PTR count = 0;
+	DWORD_PTR data = 0;
+};
 
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 {
@@ -56,6 +66,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	Entity localPlayer;
 	std::vector<Entity> entities;
+	static auto oldPunch = Vector2{};
 
 	while (gui::exit) 
 	{
@@ -76,6 +87,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress +offsets::m_flFlashBangTime);
 		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress +offsets::m_fFlags);
 		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress +offsets::m_iIDEntIndex);// 十字准星前的玩家id
+
 		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client+offsets::dwViewMatrix);
 		const auto enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
 
@@ -224,6 +236,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}*/
 		}
 
+		// 扫描距离我最近的敌人
 		std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
 			return entity1.distance < entity2.distance;
 		});
@@ -245,6 +258,45 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}
 		}
 
+		// 后坐力补偿[算法有问题，过几天修复]
+		const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress+ offsets::m_iShotsFired);// 开枪次数
+		auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
+		auto viewAngles = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::v_angle);
+		Vector3 aimPunch = mem.Read<Vector3>(aimPunchCache.data+(aimPunchCache.count - 1)*sizeof(Vector3));
+		if (shotsFired) {// 如果我们开枪了，就计算后坐力补偿
+			Vector3 recoilVector = {
+				viewAngles.x + oldPunch.x - aimPunch.x * 2.f,
+				viewAngles.y + oldPunch.y - aimPunch.y * 2.f,
+			};
+			if (recoilVector.x > 89.0f && recoilVector.x <= 180.0f) {
+				recoilVector.x = 89.0f;
+			}
+
+			if (recoilVector.x > 180.0f) {
+				recoilVector.x -= 360.0f;
+			}
+
+			if (recoilVector.x < -89.0f) {
+				recoilVector.x = -89.0f;
+			}
+
+			if (recoilVector.y > 180.0f) {
+				recoilVector.y -= 360.0f;
+			}
+
+			if (recoilVector.y < -180.0f) {
+				recoilVector.y += 360.0f;
+			}
+			recoilVector.z = 0;
+			mem.Write<Vector3>(client + offsets::dwViewAngles, recoilVector);
+			oldPunch.x = aimPunch.x * 2.f;
+			oldPunch.y = aimPunch.y * 2.f;
+		}
+		else {
+			oldPunch.x = oldPunch.y = 0.f;
+		}
+
+		// imgui渲染工作
 		gui::EndRender();
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}

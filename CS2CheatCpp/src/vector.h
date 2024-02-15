@@ -15,6 +15,15 @@ struct view_matrix_t
 	}
 };
 
+struct Vector2
+{
+	float x, y;
+
+	Vector2(
+		const float x = 0.f,
+		const float y = 0.f) noexcept : x(x), y(y) {}
+};
+
 struct Vector3 
 {
 	float x, y, z;

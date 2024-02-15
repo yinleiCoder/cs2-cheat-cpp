@@ -17,11 +17,6 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM w_param, LPA
 		return 0L;
 	}
 
-	if (message == WM_DESTROY) {
-		PostQuitMessage(0);
-		return 0L;
-	}
-
 	switch (message)
 	{
 		case WM_NCHITTEST:
@@ -171,6 +166,7 @@ void gui::DestroyDevice() noexcept
 void gui::CreateImGui() noexcept
 {
 	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplWin32_Init(overlay);
@@ -204,7 +200,7 @@ void gui::BeginRender() noexcept
 
 void gui::EndRender() noexcept
 {
-	//ImGui::EndFrame();
+	ImGui::EndFrame();
 	ImGui::Render();
 
 	constexpr float color[4]{ 0.f, 0.f, 0.f, 0.f };
