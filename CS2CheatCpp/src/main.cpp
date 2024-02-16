@@ -13,12 +13,14 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17282B8;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B3018;
-	constexpr std::ptrdiff_t dwViewAngles = 0x1920150;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x1912320;
-	constexpr std::ptrdiff_t dwForceJump = 0x1721650;
-	constexpr std::ptrdiff_t dwForceAttack = 0x1721140;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1728338;
+	constexpr std::ptrdiff_t dwEntityList = 0x18B2F98;
+	constexpr std::ptrdiff_t dwViewAngles = 0x19223D0;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19144B0;
+	constexpr std::ptrdiff_t dwForceJump = 0x17216D0;
+	constexpr std::ptrdiff_t dwForceAttack = 0x17211C0;
+	constexpr std::ptrdiff_t dwSensitivity = 0x1910CF8;
+	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
 	// client.dll.hpp 
 	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
@@ -37,9 +39,9 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_pGameSceneNode = 0x318; // CGameSceneNode*
 	constexpr std::ptrdiff_t m_modelState = 0x160; // CModelState
 	constexpr std::ptrdiff_t m_aimPunchAngle = 0x177C; // QAngle  C_CSPlayerPawn { // C_CSPlayerPawnBase
-	constexpr std::ptrdiff_t m_iShotsFired = 0x147C; // int32_t C_CSPlayerPawnBase { // C_BasePlayerPawn
+	constexpr std::ptrdiff_t m_angEyeAngles = 0x1578; // QAngle
 	constexpr std::ptrdiff_t m_aimPunchCache = 0x17A0; // CUtlVector<QAngle>
-	constexpr std::ptrdiff_t v_angle = 0x11A4; // QAngle
+	constexpr std::ptrdiff_t m_iShotsFired = 0x147C; // int32_t C_CSPlayerPawnBase { // C_BasePlayerPawn
 }
 
 struct C_UTL_VECTOR
@@ -66,7 +68,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	Entity localPlayer;
 	std::vector<Entity> entities;
-	static auto oldPunch = Vector2{};
+	static auto oldPunch = Vector3{};
 
 	while (gui::exit) 
 	{
@@ -250,7 +252,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			Vector3 newAnglesVec3{newAngles.y, newAngles.x, 0.0f};
 			mem.Write<Vector3>(client+offsets::dwViewAngles, newAnglesVec3);
 
-			if (localPlayer.entIndex > 0)
+			//if (localPlayer.entIndex > 0)
 			{
 				mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -258,42 +260,29 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}
 		}
 
-		// 后坐力补偿[算法有问题，过几天修复]
+		// 后坐力补偿
 		const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress+ offsets::m_iShotsFired);// 开枪次数
+		auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
+		auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);
 		auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
-		auto viewAngles = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::v_angle);
-		Vector3 aimPunch = mem.Read<Vector3>(aimPunchCache.data+(aimPunchCache.count - 1)*sizeof(Vector3));
-		if (shotsFired) {// 如果我们开枪了，就计算后坐力补偿
-			Vector3 recoilVector = {
-				viewAngles.x + oldPunch.x - aimPunch.x * 2.f,
-				viewAngles.y + oldPunch.y - aimPunch.y * 2.f,
-			};
-			if (recoilVector.x > 89.0f && recoilVector.x <= 180.0f) {
-				recoilVector.x = 89.0f;
-			}
-
-			if (recoilVector.x > 180.0f) {
-				recoilVector.x -= 360.0f;
-			}
-
-			if (recoilVector.x < -89.0f) {
-				recoilVector.x = -89.0f;
-			}
-
-			if (recoilVector.y > 180.0f) {
-				recoilVector.y -= 360.0f;
-			}
-
-			if (recoilVector.y < -180.0f) {
-				recoilVector.y += 360.0f;
-			}
-			recoilVector.z = 0;
-			mem.Write<Vector3>(client + offsets::dwViewAngles, recoilVector);
-			oldPunch.x = aimPunch.x * 2.f;
-			oldPunch.y = aimPunch.y * 2.f;
+		if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) {
+			localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data+(aimPunchCache.count - 1)*sizeof(Vector3));
 		}
 		else {
-			oldPunch.x = oldPunch.y = 0.f;
+			continue;
+		}
+
+		if (shotsFired) {// 如果我们开枪了，就计算后坐力补偿
+			Vector3 viewAngles = mem.Read<Vector3>(client+offsets::dwViewAngles);
+			Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
+
+			int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));
+			int mouse_angle_y = (int)(delta.y / (sensitivity*0.022f));
+			mouse_event(MOUSEEVENTF_MOVE, mouse_angle_x, -mouse_angle_y, 0, 0);
+			oldPunch = localPlayer.aimPunch * 2.0f;
+		}
+		else {
+			oldPunch.x = oldPunch.y = oldPunch.z = 0.f;
 		}
 
 		// imgui渲染工作

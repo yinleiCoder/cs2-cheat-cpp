@@ -17,6 +17,6 @@ public:
 	Vector3 head;
 	Vector3 origin;
 	Vector3 viewOffset;
-	Vector3 viewPunch;
+	Vector3 aimPunch;
 	float distance;
 };
