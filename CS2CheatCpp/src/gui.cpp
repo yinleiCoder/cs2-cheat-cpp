@@ -243,10 +243,10 @@ void gui::Render() noexcept
 	if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
 	if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 	if (unsaved_document)   window_flags |= ImGuiWindowFlags_UnsavedDocument;
-	//bool show_demo_window = true;
+	bool show_demo_window = true;
 
 	if (menutoggle) {
-		//ImGui::ShowDemoWindow(&show_demo_window);
+		ImGui::ShowDemoWindow(&show_demo_window);
 		ImGui::SetNextWindowSize({ 1280.f,720.f }, ImGuiCond_FirstUseEver);
 		ImGui::Begin("CS2 Cheat with C++", 0, window_flags);
 		if (ImGui::BeginMenuBar())
@@ -279,10 +279,12 @@ void gui::Render() noexcept
 		ImGui::Checkbox("Player body glow", &playerBodyGlow);
 		ImGui::Checkbox("Player remaining health esp", &playerHealth);
 		ImGui::Checkbox("Aimbot and headlock shot", &aimbot);
+		ImGui::SetItemTooltip("please enter E keyboard");
 		ImGui::Checkbox("Anti-rcs", &rcs);
 		ImGui::Checkbox("Radar", &radar);
 		ImGui::Checkbox("Anti-flash", &flash);
 		ImGui::Checkbox("Bhop", &bhop);
+		ImGui::SetItemTooltip("please keep pressing the space bar");
 
 		if (ImGui::CollapsingHeader("Window options"))
 		{
