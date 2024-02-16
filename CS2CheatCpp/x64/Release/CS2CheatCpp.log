@@ -48,10 +48,8 @@ E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(213,14): warning C4
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(211,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(210,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
   正在生成代码
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(63): warning C4172: 返回局部变量或临时变量的地址
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(38): warning C4172: 返回局部变量或临时变量的地址
-  4 of 1645 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
-    1 functions were new in current compilation
-    17 functions had inline decision re-evaluated but remain unchanged
+  1 of 1645 functions (<0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    16 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
   CS2CheatCpp.vcxproj -> E:\VisualStudioProjects\CS2CheatCpp\x64\Release\CS2CheatCpp.exe

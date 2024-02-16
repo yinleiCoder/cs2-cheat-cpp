@@ -272,7 +272,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			continue;
 		}
 
-		if (shotsFired) {// 如果我们开枪了，就计算后坐力补偿
+		if (shotsFired > 1) {// 如果我们开枪了，就计算后坐力补偿
 			Vector3 viewAngles = mem.Read<Vector3>(client+offsets::dwViewAngles);
 			Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
 
@@ -287,7 +287,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 		// imgui渲染工作
 		gui::EndRender();
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		std::this_thread::sleep_for(std::chrono::milliseconds(4));
 	}
 
 	gui::DestroyImGui();
