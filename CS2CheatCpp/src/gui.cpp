@@ -3,6 +3,7 @@
 #include "../dependencies/ImGui/imgui_impl_dx11.h"
 #include "../dependencies/ImGui/imgui_impl_win32.h"
 #include <corecrt_math.h>
+#define _S(_LITERAL)    (const char*)u8##_LITERAL
 
 // ImGui Win32 Handler
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -168,6 +169,8 @@ void gui::CreateImGui() noexcept
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.Fonts->AddFontFromFileTTF("C:\\Windows\\Fonts\\msyh.ttc", 16.f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
@@ -248,45 +251,45 @@ void gui::Render() noexcept
 	if (menutoggle) {
 		//ImGui::ShowDemoWindow(&show_demo_window);
 		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
-		ImGui::Begin("CS2 Cheat with C++", 0, window_flags);
+		ImGui::Begin(_S("CS2外挂"), 0, window_flags);
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu("Menu"))
+			if (ImGui::BeginMenu(_S("菜单")))
 			{
-				ImGui::MenuItem("Exit Cheat", NULL, &exit);
+				ImGui::MenuItem(_S("退出"), NULL, &exit);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::Text("Tip: ImGui (%s) (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+		ImGui::Text(_S("提示: ImGui (%s) (%d)"), IMGUI_VERSION, IMGUI_VERSION_NUM);
 		ImGui::Spacing();
 	
-		if (ImGui::CollapsingHeader("Help"))
+		if (ImGui::CollapsingHeader(_S("帮助")))
 		{
-			ImGui::SeparatorText("Usage:");
-			ImGui::TextWrapped("Show and hide menus by pressing");
-			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " the INSERT key ");
-			ImGui::TextWrapped("Download the zip file and unzip it to your computer, enter the unzipped folder, first open the CS2 game and enter a room match, then double-click CS2CheatCpp.exe to run the plug-in.");
+			ImGui::SeparatorText(_S("使用说明"));
+			ImGui::TextWrapped(_S("显示和隐藏本菜单请按键盘上的"));
+			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), _S(" INSERT键"));
+			ImGui::TextWrapped(_S("下载zip文件，并解压到您的电脑上，进入解压后的文件夹，先打开CS2游戏并进入匹配对局，然后双击CS2CheatCpp.exe运行外挂即可"));
 
-			ImGui::SeparatorText("Github Homepage:");
+			ImGui::SeparatorText(_S("Github主页"));
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
 
-			ImGui::SeparatorText("Software Download:");
+			ImGui::SeparatorText(_S("软件下载地址"));
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
 		}
-		ImGui::Checkbox("Player box esp", &boxEsp);
-		ImGui::Checkbox("Player body glow", &playerBodyGlow);
-		ImGui::Checkbox("Player remaining health esp", &playerHealth);
-		ImGui::Checkbox("Aimbot and headlock shot", &aimbot);
-		ImGui::SetItemTooltip("please enter E keyboard");
-		ImGui::Checkbox("Anti-rcs", &rcs);
-		ImGui::Checkbox("Radar", &radar);
-		ImGui::Checkbox("Anti-flash", &flash);
-		ImGui::Checkbox("Bhop", &bhop);
-		ImGui::SetItemTooltip("please keep pressing the space bar");
+		ImGui::Checkbox(_S("方框透视"), &boxEsp);
+		ImGui::Checkbox(_S("人物发光"), &playerBodyGlow);
+		ImGui::Checkbox(_S("玩家剩余血量"), &playerHealth);
+		ImGui::Checkbox(_S("自瞄锁头射击"), &aimbot);
+		ImGui::SetItemTooltip(_S("请按键盘上的E键"));
+		ImGui::Checkbox(_S("RCS后座力补偿"), &rcs);
+		ImGui::Checkbox(_S("雷达"), &radar);
+		ImGui::Checkbox(_S("抗闪光"), &flash);
+		ImGui::Checkbox(_S("连跳"), &bhop);
+		ImGui::SetItemTooltip(_S("请连续按住键盘上的空格键"));
 
-		if (ImGui::CollapsingHeader("Window options"))
+		if (ImGui::CollapsingHeader(_S("窗口选项")))
 		{
 			if (ImGui::BeginTable("split", 3))
 			{
