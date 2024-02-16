@@ -222,7 +222,7 @@ void gui::EndRender() noexcept
 
 void gui::Render() noexcept
 {
-	static bool no_titlebar = false;
+	static bool no_titlebar = true;
 	static bool no_scrollbar = false;
 	static bool no_menu = false;
 	static bool no_move = false;
@@ -247,7 +247,7 @@ void gui::Render() noexcept
 
 	if (menutoggle) {
 		//ImGui::ShowDemoWindow(&show_demo_window);
-		ImGui::SetNextWindowSize({ 1280.f,720.f }, ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
 		ImGui::Begin("CS2 Cheat with C++", 0, window_flags);
 		if (ImGui::BeginMenuBar())
 		{

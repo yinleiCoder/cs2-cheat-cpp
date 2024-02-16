@@ -1,12 +1,5 @@
-﻿  memory.cpp
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\memory\handle_hijack.h(222,12): warning C4244: “*=”: 从“double”转换到“DWORD”，可能丢失数据
-  (编译源文件“src/memory/memory.cpp”)
-  
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\memory\handle_hijack.h(271,29): warning C4312: “类型强制转换”: 从“ULONG”转换到更大的“DWORD *”
-  (编译源文件“src/memory/memory.cpp”)
-  
-  正在生成代码
-  3 of 1824 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+﻿  正在生成代码
+  1 of 1824 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     24 functions had inline decision re-evaluated but remain unchanged
   已完成代码的生成
