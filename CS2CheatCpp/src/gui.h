@@ -8,6 +8,15 @@ namespace gui
 {
 	// imgui控件状态
 	inline bool exit = true;
+	inline bool menutoggle = true;
+	inline bool boxEsp = true;// 方框透视
+	inline bool playerBodyGlow = true;// 玩家身体发光
+	inline bool playerHealth = true;// 玩家血量
+	inline bool aimbot = true;// 自瞄并锁头
+	inline bool rcs = true; // 后座力补偿
+	inline bool radar = false;// 雷达
+	inline bool flash = true; // 防闪光
+	inline bool bhop = false;// 连跳
 
 	// win32api window相关变量
 	inline HWND overlay = nullptr;

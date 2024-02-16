@@ -13,13 +13,13 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1728338;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B2F98;
-	constexpr std::ptrdiff_t dwViewAngles = 0x19223D0;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19144B0;
-	constexpr std::ptrdiff_t dwForceJump = 0x17216D0;
-	constexpr std::ptrdiff_t dwForceAttack = 0x17211C0;
-	constexpr std::ptrdiff_t dwSensitivity = 0x1910CF8;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1729338;
+	constexpr std::ptrdiff_t dwEntityList = 0x18B3F98;
+	constexpr std::ptrdiff_t dwViewAngles = 0x19233D0;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19154B0;
+	constexpr std::ptrdiff_t dwForceJump = 0x17226D0;
+	constexpr std::ptrdiff_t dwForceAttack = 0x17221C0;
+	constexpr std::ptrdiff_t dwSensitivity = 0x1911CF8;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
 	// client.dll.hpp 
@@ -94,13 +94,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		const auto enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
 
 		// 防闪光弹
-		if (localPlayer.flashDuration > 0)
+		if (gui::flash && localPlayer.flashDuration > 0)
 		{
 			mem.Write<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime, 0);
 		}
 
 		// 兔子连跳
-		if (GetAsyncKeyState(VK_SPACE) & 0x01)
+		if (gui::bhop && GetAsyncKeyState(VK_SPACE) & 0x01)
 		{
 			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
 			{
@@ -152,10 +152,14 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 				continue;
 			}
 			// 获取雷达状态并设置敌人显示在雷达上
-			bool spotted = mem.Read<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted);
-			mem.Write<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
+			if (gui::radar) {
+				bool spotted = mem.Read<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted);
+				mem.Write<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
+			}
 			// 玩家发光
-			mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
+			if (gui::playerBodyGlow) {
+				mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
+			}
 			
 			Entity entity;
 			entity.name = playerName;
@@ -195,8 +199,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 				entity.origin.x != 0) {
 				float height = screenPos.y - screenHead.y;
 				float width = height / 2.4f;
+				if (gui::boxEsp) {
 					Render::DrawRect(
-						screenHead.x - width /2,
+						screenHead.x - width / 2,
 						screenHead.y,
 						width,
 						height,
@@ -205,7 +210,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 						false,
 						255
 					);
+				}
 
+				if (gui::playerHealth) {
 					Render::DrawRect(
 						screenHead.x - (width / 2 + 10),
 						screenHead.y + (height * (100 - health) / 100),
@@ -216,6 +223,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 						true,
 						255
 					);
+				}
 			}
 			/*Render::Circle(
 				screenHead.x,
@@ -238,14 +246,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}*/
 		}
 
-		// 扫描距离我最近的敌人
-		std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
-			return entity1.distance < entity2.distance;
-		});
-
 		// 自瞄锁头并开枪
-		if (entities.size() > 0 && (GetAsyncKeyState('E') & 0x8000))
+		if (gui::aimbot && entities.size() > 0 && (GetAsyncKeyState('E') & 0x8000))
 		{
+			// 扫描距离我最近的敌人
+			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
+				return entity1.distance < entity2.distance;
+				});
 			Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
 			Vector3 entityView = entities[0].origin + entities[0].viewOffset;
 			Vector3 newAngles = Vector3::angles(playerView, entities[0].head);
@@ -261,28 +268,29 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		// 后坐力补偿
-		const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress+ offsets::m_iShotsFired);// 开枪次数
-		auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
-		auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);
-		auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
-		if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) {
-			localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data+(aimPunchCache.count - 1)*sizeof(Vector3));
-		}
-		else {
-			continue;
-		}
+		if (gui::rcs) {
+			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + offsets::m_iShotsFired);// 开枪次数
+			auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
+			auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);
+			auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
+			if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) {
+				localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data + (aimPunchCache.count - 1) * sizeof(Vector3));
+			}
+			else {
+				continue;
+			}
+			if (shotsFired > 1) {// 如果我们开枪了，就计算后坐力补偿
+				Vector3 viewAngles = mem.Read<Vector3>(client+offsets::dwViewAngles);
+				Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
 
-		if (shotsFired > 1) {// 如果我们开枪了，就计算后坐力补偿
-			Vector3 viewAngles = mem.Read<Vector3>(client+offsets::dwViewAngles);
-			Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
-
-			int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));
-			int mouse_angle_y = (int)(delta.y / (sensitivity*0.022f));
-			mouse_event(MOUSEEVENTF_MOVE, mouse_angle_x, -mouse_angle_y, 0, 0);
-			oldPunch = localPlayer.aimPunch * 2.0f;
-		}
-		else {
-			oldPunch.x = oldPunch.y = oldPunch.z = 0.f;
+				int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));
+				int mouse_angle_y = (int)(delta.y / (sensitivity*0.022f));
+				mouse_event(MOUSEEVENTF_MOVE, mouse_angle_x, -mouse_angle_y, 0, 0);
+				oldPunch = localPlayer.aimPunch * 2.0f;
+			}
+			else {
+				oldPunch.x = oldPunch.y = oldPunch.z = 0.f;
+			}
 		}
 
 		// imgui渲染工作

@@ -14,21 +14,15 @@ int screenHeight = GetSystemMetrics(SM_CYSCREEN);
 // windows消息处理
 LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM w_param, LPARAM l_param) {
 	if (ImGui_ImplWin32_WndProcHandler(window, message, w_param, l_param)) {
-		return 0L;
+		return true;
 	}
 
 	switch (message)
 	{
-		case WM_NCHITTEST:
+		case WM_SYSCOMMAND:
 		{
-			const LONG borderWith = GetSystemMetrics(SM_CXSIZEFRAME);
-			const LONG titleBarHeight = GetSystemMetrics(SM_CYSIZEFRAME);
-			POINT cursorPos = { GET_X_LPARAM(w_param), GET_Y_LPARAM(l_param) };
-			RECT windowRect;
-			GetWindowRect(window, &windowRect);
-			if (cursorPos.y >= windowRect.top && cursorPos.y < windowRect.top + titleBarHeight) {
-				return HTCAPTION;
-			}
+			if ((w_param & 0xfff0) == SC_KEYMENU) // Disable ALT application menu
+				return 0;
 			break;
 		}
 		case WM_DESTROY:
@@ -36,8 +30,9 @@ LRESULT CALLBACK window_procedure(HWND window, UINT message, WPARAM w_param, LPA
 			PostQuitMessage(0);
 			return 0L;
 		}
+		default:
+			return DefWindowProc(window, message, w_param, l_param);
 	}
-
 	return DefWindowProc(window, message, w_param, l_param);
 }
 
@@ -99,6 +94,7 @@ void gui::DestroyHWindow() noexcept
 
 bool gui::CreateDevice() noexcept
 {
+	ZeroMemory(&sd, sizeof(sd));
 	sd.BufferDesc.RefreshRate.Numerator = 60U; // fps
 	sd.BufferDesc.RefreshRate.Denominator = 1U;
 	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -149,24 +145,32 @@ void gui::ResetDevice() noexcept
 
 void gui::DestroyDevice() noexcept
 {
+	if (render_target_view) {
+		render_target_view->Release();
+		render_target_view = nullptr;
+	}
 	if (swap_chain) {
 		swap_chain->Release();
+		swap_chain = nullptr;
 	}
 	if (device_context) {
 		device_context->Release();
+		device_context = nullptr;
 	}
 	if (device) {
 		device->Release();
-	}
-	if (render_target_view) {
-		render_target_view->Release();
+		device = nullptr;
 	}
 }
 
 void gui::CreateImGui() noexcept
 {
+	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
 	ImGui::StyleColorsDark();
 
 	ImGui_ImplWin32_Init(overlay);
@@ -182,6 +186,10 @@ void gui::DestroyImGui() noexcept
 
 void gui::BeginRender() noexcept
 {
+	if (GetAsyncKeyState(VK_INSERT) & 1) {
+		menutoggle = !menutoggle;
+	}
+
 	MSG msg;
 	while (PeekMessage(&msg, nullptr, 0U, 0U, PM_REMOVE)) {
 		TranslateMessage(&msg);
@@ -203,9 +211,9 @@ void gui::EndRender() noexcept
 	ImGui::EndFrame();
 	ImGui::Render();
 
-	constexpr float color[4]{ 0.f, 0.f, 0.f, 0.f };
+	constexpr float clear_color_with_alpha[4]{ 0.f, 0.f, 0.f, 0.f };
 	device_context->OMSetRenderTargets(1U, &render_target_view, nullptr);
-	device_context->ClearRenderTargetView(render_target_view, color);
+	device_context->ClearRenderTargetView(render_target_view, clear_color_with_alpha);
 
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 	// 开启垂直同步
@@ -214,30 +222,90 @@ void gui::EndRender() noexcept
 
 void gui::Render() noexcept
 {
-	//ImGui::Begin("My First Tool", &exit, ImGuiWindowFlags_MenuBar);
-	//if (ImGui::BeginMenuBar())
-	//{
-	//	if (ImGui::BeginMenu("File"))
-	//	{
-	//		if (ImGui::MenuItem("Open..", "Ctrl+O")) { /* Do stuff */ }
-	//		if (ImGui::MenuItem("Save", "Ctrl+S")) { /* Do stuff */ }
-	//		if (ImGui::MenuItem("Close", "Ctrl+W")) { exit = false; }
-	//		ImGui::EndMenu();
-	//	}
-	//	ImGui::EndMenuBar();
-	//}
+	static bool no_titlebar = false;
+	static bool no_scrollbar = false;
+	static bool no_menu = false;
+	static bool no_move = false;
+	static bool no_resize = false;
+	static bool no_collapse = false;
+	static bool no_nav = false;
+	static bool no_background = false;
+	static bool no_bring_to_front = false;
+	static bool unsaved_document = false;
+	ImGuiWindowFlags window_flags = 0;
+	if (no_titlebar)        window_flags |= ImGuiWindowFlags_NoTitleBar;
+	if (no_scrollbar)       window_flags |= ImGuiWindowFlags_NoScrollbar;
+	if (!no_menu)           window_flags |= ImGuiWindowFlags_MenuBar;
+	if (no_move)            window_flags |= ImGuiWindowFlags_NoMove;
+	if (no_resize)          window_flags |= ImGuiWindowFlags_NoResize;
+	if (no_collapse)        window_flags |= ImGuiWindowFlags_NoCollapse;
+	if (no_nav)             window_flags |= ImGuiWindowFlags_NoNav;
+	if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
+	if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+	if (unsaved_document)   window_flags |= ImGuiWindowFlags_UnsavedDocument;
+	bool show_demo_window = true;
 
-	//// Generate samples and plot them
-	//float samples[100];
-	//for (int n = 0; n < 100; n++)
-	//	samples[n] = sinf(n * 0.2f + ImGui::GetTime() * 1.5f);
-	//ImGui::PlotLines("Samples", samples, 100);
+	if (menutoggle) {
+		ImGui::ShowDemoWindow(&show_demo_window);
+		ImGui::SetNextWindowSize({ 1280,720.f }, ImGuiCond_FirstUseEver);
+		ImGui::Begin("CS2 Cheat with C++", 0, window_flags);
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("Menu"))
+			{
+				ImGui::MenuItem("Exit Cheat", NULL, &exit);
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 
-	//// Display contents in a scrolling region
-	//ImGui::TextColored(ImVec4(1, 1, 0, 1), "Important Stuff");
-	//ImGui::BeginChild("Scrolling");
-	//for (int n = 0; n < 50; n++)
-	//	ImGui::Text("%04d: Some text", n);
-	//ImGui::EndChild();
-	//ImGui::End();
+		ImGui::Text("Tip: ImGui (%s) (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+		ImGui::Spacing();
+	
+		if (ImGui::CollapsingHeader("Help"))
+		{
+			ImGui::SeparatorText("Usage:");
+			ImGui::TextWrapped("Show and hide menus by pressing");
+			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " the INSERT key ");
+			ImGui::TextWrapped("Download the zip file and unzip it to your computer, enter the unzipped folder, first open the CS2 game and enter a room match, then double-click CS2CheatCpp.exe to run the plug-in.");
+
+			ImGui::SeparatorText("Github Homepage:");
+			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
+
+			ImGui::SeparatorText("Software Download:");
+			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
+		}
+		ImGui::Checkbox("Player box esp", &boxEsp);
+		ImGui::Checkbox("Player body glow", &playerBodyGlow);
+		ImGui::Checkbox("Player remaining health esp", &playerHealth);
+		ImGui::Checkbox("Aimbot and headlock shot", &aimbot);
+		ImGui::Checkbox("Anti-rcs", &rcs);
+		ImGui::Checkbox("Radar", &radar);
+		ImGui::Checkbox("Anti-flash", &flash);
+		ImGui::Checkbox("Bhop", &bhop);
+
+		if (ImGui::CollapsingHeader("Window options"))
+		{
+			if (ImGui::BeginTable("split", 3))
+			{
+				ImGui::TableNextColumn(); ImGui::Checkbox("No titlebar", &no_titlebar);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No scrollbar", &no_scrollbar);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No menu", &no_menu);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No move", &no_move);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No resize", &no_resize);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No collapse", &no_collapse);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No nav", &no_nav);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No background", &no_background);
+				ImGui::TableNextColumn(); ImGui::Checkbox("No bring to front", &no_bring_to_front);
+				ImGui::TableNextColumn(); ImGui::Checkbox("Unsaved document", &unsaved_document);
+				ImGui::EndTable();
+			}
+		}
+		
+		ImGui::End();
+		SetWindowLong(overlay, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_LAYERED);
+	}
+	else {
+		SetWindowLong(overlay, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED );
+	}
 }
