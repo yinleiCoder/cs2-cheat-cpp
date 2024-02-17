@@ -167,6 +167,7 @@
     <ClInclude Include="dependencies\ImGui\imstb_rectpack.h" />
     <ClInclude Include="dependencies\ImGui\imstb_textedit.h" />
     <ClInclude Include="dependencies\ImGui\imstb_truetype.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="src\bone.hpp" />
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\gui.h" />
@@ -174,6 +175,9 @@
     <ClInclude Include="src\memory\memory.h" />
     <ClInclude Include="src\render.h" />
     <ClInclude Include="src\vector.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="CS2CheatCpp1.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

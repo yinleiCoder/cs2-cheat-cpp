@@ -13,13 +13,13 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1729338;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B3F98;
-	constexpr std::ptrdiff_t dwViewAngles = 0x19233D0;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19154B0;
-	constexpr std::ptrdiff_t dwForceJump = 0x17226D0;
-	constexpr std::ptrdiff_t dwForceAttack = 0x17221C0;
-	constexpr std::ptrdiff_t dwSensitivity = 0x1911CF8;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1729348;
+	constexpr std::ptrdiff_t dwEntityList = 0x18B3FA8;
+	constexpr std::ptrdiff_t dwViewAngles = 0x19233E0;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19154C0;
+	constexpr std::ptrdiff_t dwForceJump = 0x17226E0;
+	constexpr std::ptrdiff_t dwForceAttack = 0x17221D0;
+	constexpr std::ptrdiff_t dwSensitivity = 0x1911D08;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
 	// client.dll.hpp 

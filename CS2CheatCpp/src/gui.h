@@ -12,8 +12,8 @@ namespace gui
 	inline bool boxEsp = true;// 方框透视
 	inline bool playerBodyGlow = true;// 玩家身体发光
 	inline bool playerHealth = true;// 玩家血量
-	inline bool aimbot = true;// 自瞄并锁头
-	inline bool rcs = true; // 后座力补偿
+	inline bool aimbot = false;// 自瞄并锁头
+	inline bool rcs = false; // 后座力补偿
 	inline bool radar = false;// 雷达
 	inline bool flash = true; // 防闪光
 	inline bool bhop = false;// 连跳
