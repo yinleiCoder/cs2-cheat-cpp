@@ -66,7 +66,7 @@ struct Vector3
 	static float distance(const Vector3& from, const Vector3& to)
 	{
 		Vector3 res = from - to;
-		return std::sqrt(res.x*res.x + res.y*res.y+res.z*res.z);
+		return std::sqrt(res.x * res.x + res.y * res.y+res.z * res.z);
 	}
 
 	static Vector3 angles(const Vector3& from, const Vector3& to)

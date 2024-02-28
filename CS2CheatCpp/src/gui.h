@@ -12,11 +12,17 @@ namespace gui
 	inline bool boxEsp = true;// 方框透视
 	inline bool playerBodyGlow = true;// 玩家身体发光
 	inline bool playerHealth = true;// 玩家血量
-	inline bool aimbot = false;// 自瞄并锁头
+	inline bool aimbot = false;// 自瞄锁头
+	inline bool autoAttack = false;// 自瞄锁头并开枪
 	inline bool rcs = false; // 后座力补偿
 	inline bool radar = false;// 雷达
 	inline bool flash = true; // 防闪光
 	inline bool bhop = false;// 连跳
+	inline int fov = 0;// 视野角度
+	inline int speed = 0;// 当前速度
+	inline int maxSpeed = 0;// 最大速度
+	inline bool bombPlanted = false; // 炸弹是否已安放
+	inline int bombTimeLeft = -1; // 炸弹爆炸倒计时
 
 	// win32api window相关变量
 	inline HWND overlay = nullptr;

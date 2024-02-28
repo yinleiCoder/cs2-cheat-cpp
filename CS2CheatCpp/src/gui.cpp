@@ -246,9 +246,14 @@ void gui::Render() noexcept
 	if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
 	if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
 	if (unsaved_document)   window_flags |= ImGuiWindowFlags_UnsavedDocument;
-	//bool show_demo_window = true;
+
+	// 更新当前玩家最大速度
+	if (speed > maxSpeed) {
+		maxSpeed = speed;
+	}
 
 	if (menutoggle) {
+		//static bool show_demo_window = true;
 		//ImGui::ShowDemoWindow(&show_demo_window);
 		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
 		ImGui::Begin(_S("CS2外挂"), 0, window_flags);
@@ -262,10 +267,10 @@ void gui::Render() noexcept
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::Text(_S("提示: ImGui (%s) (%d)"), IMGUI_VERSION, IMGUI_VERSION_NUM);
+		ImGui::Text(_S("运行环境: ImGui (%s) (%d)"), IMGUI_VERSION, IMGUI_VERSION_NUM);
 		ImGui::Spacing();
 	
-		if (ImGui::CollapsingHeader(_S("帮助")))
+		if (ImGui::CollapsingHeader(_S("使用前必看")))
 		{
 			ImGui::SeparatorText(_S("使用说明"));
 			ImGui::TextWrapped(_S("显示和隐藏本菜单请按键盘上的"));
@@ -277,17 +282,10 @@ void gui::Render() noexcept
 
 			ImGui::SeparatorText(_S("软件下载地址"));
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
+
+			ImGui::SeparatorText(_S("免责声明"));
+			ImGui::TextWrapped(_S("此项目仅供C++、逆向工程爱好者代码参考和学习交流，请勿运行本程序在真实的匹配对局破坏游戏公平，且不要将此软件运用于商业目的进行盈利，与作者无关，后果请自行承担！！！"));
 		}
-		ImGui::Checkbox(_S("方框透视"), &boxEsp);
-		ImGui::Checkbox(_S("人物发光"), &playerBodyGlow);
-		ImGui::Checkbox(_S("玩家剩余血量"), &playerHealth);
-		ImGui::Checkbox(_S("自瞄锁头射击"), &aimbot);
-		ImGui::SetItemTooltip(_S("请按键盘上的E键"));
-		ImGui::Checkbox(_S("RCS后座力补偿"), &rcs);
-		ImGui::Checkbox(_S("雷达"), &radar);
-		ImGui::Checkbox(_S("抗闪光"), &flash);
-		ImGui::Checkbox(_S("连跳"), &bhop);
-		ImGui::SetItemTooltip(_S("请连续按住键盘上的空格键"));
 
 		if (ImGui::CollapsingHeader(_S("窗口选项")))
 		{
@@ -306,7 +304,32 @@ void gui::Render() noexcept
 				ImGui::EndTable();
 			}
 		}
-		
+
+		ImGui::Text(_S("玩家当前移动速度: %d"), speed);
+		ImGui::Text(_S("玩家最大移动速度: %d"), maxSpeed);
+		ImGui::Checkbox(_S("方框透视"), &boxEsp);
+		ImGui::Checkbox(_S("人物发光"), &playerBodyGlow);
+		ImGui::Checkbox(_S("玩家剩余血量"), &playerHealth);
+		ImGui::SetItemTooltip(_S("血量会在敌人旁边实时绘制成绿色矩形"));
+		ImGui::Checkbox(_S("自瞄锁头"), &aimbot);
+		ImGui::SetItemTooltip(_S("此选项需要玩家自己开枪，或者配合打开自动开枪选项，本选项配合雷达选项可实现敌人与墙体的遮挡可见性检测"));
+		ImGui::Checkbox(_S("雷达"), &radar);
+		ImGui::SetItemTooltip(_S("此选项会在地图上一直显示敌人的雷达，但会屏蔽敌人可见性检测自瞄锁头"));
+		ImGui::Checkbox(_S("自动开枪"), &autoAttack);
+		ImGui::SetItemTooltip(_S("此选项配合需要同时打开自瞄锁头和本选项"));
+		ImGui::Checkbox(_S("RCS后座力补偿"), &rcs);
+		ImGui::Checkbox(_S("抗闪光"), &flash);
+		ImGui::Checkbox(_S("连跳"), &bhop);
+		ImGui::SetItemTooltip(_S("连续按住键盘上的空格键"));
+		ImGui::SliderInt(_S("视野角度"), &fov, 0, 180);
+		if (bombPlanted) {
+			ImGui::Text(_S("土匪已将炸弹安放，距离爆炸还剩 %d 秒"), bombTimeLeft);
+		}
+		else 
+		{
+			ImGui::Text(_S("土匪目前还没安装炸弹，快去剿灭他们！"));
+		}
+
 		ImGui::End();
 		SetWindowLong(overlay, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_LAYERED);
 	}

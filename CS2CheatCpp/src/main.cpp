@@ -19,6 +19,7 @@ namespace offsets {
 	constexpr std::ptrdiff_t dwViewMatrix = 0x19154C0;
 	constexpr std::ptrdiff_t dwForceJump = 0x17226E0;
 	constexpr std::ptrdiff_t dwForceAttack = 0x17221D0;
+	constexpr std::ptrdiff_t dwGameRules = 0x1910FC0;
 	constexpr std::ptrdiff_t dwSensitivity = 0x1911D08;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
@@ -42,6 +43,11 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_angEyeAngles = 0x1578; // QAngle
 	constexpr std::ptrdiff_t m_aimPunchCache = 0x17A0; // CUtlVector<QAngle>
 	constexpr std::ptrdiff_t m_iShotsFired = 0x147C; // int32_t C_CSPlayerPawnBase { // C_BasePlayerPawn
+	constexpr std::ptrdiff_t m_pCameraServices = 0x1138; // CPlayer_CameraServices*
+	constexpr std::ptrdiff_t m_iFOV = 0x210; // uint32_t
+	constexpr std::ptrdiff_t m_bIsScoped = 0x1400; // bool
+	constexpr std::ptrdiff_t m_vecAbsVelocity = 0x3D8; // Vector
+	constexpr std::ptrdiff_t m_bBombPlanted = 0x9DD; // bool C_CSGameRules 
 }
 
 struct C_UTL_VECTOR
@@ -68,137 +74,160 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	Entity localPlayer;
 	std::vector<Entity> entities;
+	entities.reserve(64);
+	bool bombPlanted = false;
 	static auto oldPunch = Vector3{};
 
 	while (gui::exit) 
 	{
+		entities.clear();
+
 		if (!gui::exit) {
 			break;
 		}
-
-		entities.clear();
 
 		gui::BeginRender();
 		gui::Render();
 
 		// 处理外挂业务逻辑: 获取相关数据的地址
-		localPlayer.pawnAddress = mem.Read<uintptr_t>(client+offsets::dwLocalPlayerPawn);
-		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress +offsets::m_vOldOrigin);
-		localPlayer.viewOffset = mem.Read<Vector3>(localPlayer.pawnAddress +offsets::m_vecViewOffset);
-		localPlayer.team = mem.Read<int>(localPlayer.pawnAddress +offsets::m_iTeamNum);
-		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress +offsets::m_flFlashBangTime);
-		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress +offsets::m_fFlags);
-		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress +offsets::m_iIDEntIndex);// 十字准星前的玩家id
+		localPlayer.pawnAddress = mem.Read<uintptr_t>(client + offsets::dwLocalPlayerPawn);
+		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vOldOrigin);
+		localPlayer.viewOffset = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecViewOffset);
+		localPlayer.team = mem.Read<int>(localPlayer.pawnAddress + offsets::m_iTeamNum);
+		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress + offsets::m_iIDEntIndex);// 准星前的玩家id
+		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress + offsets::m_fFlags);// 玩家的fFlag
+		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime);//玩家遭受闪光的时间
+		localPlayer.velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);// 玩家移动速度
 
-		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client+offsets::dwViewMatrix);
-		const auto enity_list = mem.Read<uintptr_t>(client+offsets::dwEntityList);
+		const auto enity_list = mem.Read<uintptr_t>(client + offsets::dwEntityList);
+		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client + offsets::dwViewMatrix);
+		uintptr_t gameRules = mem.Read<uintptr_t>(client + offsets::dwGameRules);
 
-		// 防闪光弹
-		if (gui::flash && localPlayer.flashDuration > 0)
+		// c4炸弹倒计时
+		if (gameRules) 
 		{
-			mem.Write<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime, 0);
-		}
-
-		// 兔子连跳
-		if (gui::bhop && GetAsyncKeyState(VK_SPACE) & 0x01)
-		{
-			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
+			bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
+			if (bombPlanted)
 			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				mem.Write<unsigned int>(client+offsets::dwForceJump, PLUS_JUMP);
+				gui::bombPlanted = true;
+				/*for (int i = 0;i < 40;i++)
+				{
+					bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
+					if (!bombPlanted) 
+					{
+						break;
+					}
+					gui::bombTimeLeft = 40 - i;
+					gui::bombPlanted = true;
+
+					std::this_thread::sleep_for(std::chrono::seconds(1));
+				}*/
 			}
 			else
 			{
-				mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
+				gui::bombTimeLeft = -1;
+				gui::bombPlanted = false;
 			}
 		}
 
 		// 处理外挂业务逻辑: 根据entityList找到currentPawn、currentController获取相关玩家信息，currentController下有pawnHandle，通过pawnHandle得到currentPawn
 		for (int playerIndex = 1; playerIndex < 64; ++playerIndex)
 		{
-			const auto list_entry = mem.Read<uintptr_t>(enity_list +(8*(playerIndex & 0x7FFF) >> 9)+16);// 16==0x10
-			if (!list_entry) {
-				continue;
-			}
-			// 得到currentController
-			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
-			if (!currentController) {
-				continue;
-			}
-			// 通过currentController获取团队编号等信息
-			int team = mem.Read<int>(currentController+offsets::m_iTeamNum);
-			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
-
-			if (team == localPlayer.team) {
-				continue; // 队友
-			}
-
-			// 通过currentController得到pawnHandle
-			const auto playerPawnHandle = mem.Read<uint32_t>(currentController+offsets::m_hPlayerPawn);
-			// 通过pawnHandle得到currentPawn
-			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawnHandle & 0x7FFF) >> 9) + 16);// 16==0x10
-			if (!list_entry2) {
-				continue;
-			}
-			// 拿到了currentPawn
-			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
-			if (!currentPawn || currentPawn == localPlayer.pawnAddress) {
-				continue;
-			}
-			// currentPawn有生命值等信息,而玩家姓名在currentController下
-			int health = mem.Read<int>(currentPawn+offsets::m_iHealth);
-			const auto lifeState = mem.Read<unsigned int>(currentPawn+offsets::m_lifeState);
-			if (health <= 0 || health > 100 || lifeState != 256) {
-				continue;
-			}
-			// 获取雷达状态并设置敌人显示在雷达上
-			if (gui::radar) {
-				bool spotted = mem.Read<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted);
-				mem.Write<bool>(currentController + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
-			}
-			// 玩家发光
-			if (gui::playerBodyGlow) {
-				mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
-			}
-			
-			Entity entity;
-			entity.name = playerName;
-			entity.pawnAddress = currentPawn;
-			entity.controllerAddress = currentController;
-			entity.health = health;
-			entity.lifeState = lifeState;
-			entity.team = team;
-			entity.origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
-			entity.viewOffset = mem.Read<Vector3>(currentPawn+offsets::m_vecViewOffset);
-			entity.distance = Vector3::distance(entity.origin, localPlayer.origin);
-
-			// 骨骼绘制
-			// 获取玩家的头坐标实现锁头
-			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
-			const auto boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
-			//Vector3 head = { entity.origin.x, entity.origin.y, entity.origin.z + 75.f };
-			entity.head = mem.Read<Vector3>(boneMatrix + bones::head * 32);
-
-			entities.push_back(entity);
-
-			Vector3 screenPos;
-			Vector3 screenHead;
-			float headHeight = (screenPos.y - screenHead.y) / 8;
-
-			RGB enemy = { 255, 0, 0 };
-			RGB bone = { 255, 255, 255 };
-			RGB hp = { 0, 255, 0 };
-
 			// 如果不是CS2游戏在前台就不绘制
 			if (!mem.InForeground()) {
 				continue;
 			}
 
+			// 根据entity_list获取第一个入口点
+			const auto list_entry = mem.Read<uintptr_t>(enity_list + (8 * (playerIndex & 0x7FFF) >> 9) + 16);// 16==0x10
+			if (!list_entry) {
+				continue;
+			}
+
+			// 获取currentController
+			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
+			if (!currentController) {
+				continue;
+			}
+
+			// 通过currentController获取pawnHandle
+			const auto playerPawnHandle = mem.Read<uint32_t>(currentController + offsets::m_hPlayerPawn);
+
+			// 通过pawnHandle和entityList获取第二个入口点和currentPawn
+			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawnHandle & 0x7FFF) >> 9) + 16);// 16==0x10
+			if (!list_entry2) {
+				continue;
+			}
+			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
+			// 扫描到"我"就排除我的信息
+			if (!currentPawn || currentPawn == localPlayer.pawnAddress) {
+				continue;
+			}
+
+			// 通过currentController获取团队编号、姓名等信息
+			int team = mem.Read<int>(currentController + offsets::m_iTeamNum);
+			// 猪队友
+			if (team == localPlayer.team) {
+				continue;
+			}
+			// 玩家的真实姓名
+			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
+
+			// currentPawn有生命值等信息,而玩家姓名在currentController下
+			int health = mem.Read<int>(currentPawn + offsets::m_iHealth);
+			const auto lifeState = mem.Read<unsigned int>(currentPawn + offsets::m_lifeState);
+			if (health <= 0 || health > 100 || lifeState != 256) {
+				continue;
+			}
+
+			// 获取雷达状态并设置敌人显示在雷达上
+			if (gui::radar) {
+				bool spotted = mem.Read<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted);
+				mem.Write<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
+			}
+
+			// 玩家身体发光
+			if (gui::playerBodyGlow) {
+				mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
+			}
+			
+			Entity entity;
+			entity.pawnAddress = currentPawn;
+			entity.controllerAddress = currentController;
+			entity.name = playerName;
+			entity.health = health;
+			entity.lifeState = lifeState;
+			entity.team = team;
+			entity.spotted = mem.Read<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted);
+			entity.origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
+			entity.viewOffset = mem.Read<Vector3>(currentPawn+offsets::m_vecViewOffset);
+			entity.distance = Vector3::distance(entity.origin, localPlayer.origin);
+
+			// 获取玩家的头坐标实现锁头
+			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
+			// 获取骨骼信息绘制玩家骨骼
+			const auto boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
+			//Vector3 head = { entity.origin.x, entity.origin.y, entity.origin.z + 75.f };
+			entity.head = mem.Read<Vector3>(boneMatrix + bones::head * 32);
+
+			// 将收集好的所有玩家信息存储起来
+			entities.push_back(entity);
+
+			// 准备绘制需要的数据
+			Vector3 screenPos;
+			Vector3 screenHead;
+
+			RGB enemy = { 255, 0, 0 };
+			RGB hp = { 0, 255, 0 };
+			//RGB bone = { 255, 255, 255 };
+
 			if (Vector3::word_to_screen(view_matrix, entity.origin, screenPos) &&
 				Vector3::word_to_screen(view_matrix, entity.head, screenHead) &&
 				entity.origin.x != 0) {
 				float height = screenPos.y - screenHead.y;
+				//float headHeight = height / 8;
 				float width = height / 2.4f;
+
 				if (gui::boxEsp) {
 					Render::DrawRect(
 						screenHead.x - width / 2,
@@ -216,7 +245,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 					Render::DrawRect(
 						screenHead.x - (width / 2 + 10),
 						screenHead.y + (height * (100 - health) / 100),
-						2,
+						3,
 						height - (height * (100 - health) / 100),
 						hp,
 						1.5,
@@ -247,25 +276,62 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		// 自瞄锁头并开枪
-		if (gui::aimbot && entities.size() > 0 && (GetAsyncKeyState('E') & 0x8000))
+		if (gui::aimbot && entities.size() > 0 && !gui::radar && entities[0].spotted)
 		{
 			// 扫描距离我最近的敌人
 			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
 				return entity1.distance < entity2.distance;
 				});
+
+			// 计算自瞄需要偏移的角度
 			Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
-			Vector3 entityView = entities[0].origin + entities[0].viewOffset;
+			//Vector3 entityView = entities[0].origin + entities[0].viewOffset;
 			Vector3 newAngles = Vector3::angles(playerView, entities[0].head);
 			Vector3 newAnglesVec3{newAngles.y, newAngles.x, 0.0f};
-			mem.Write<Vector3>(client+offsets::dwViewAngles, newAnglesVec3);
+			mem.Write<Vector3>(client + offsets::dwViewAngles, newAnglesVec3);
 
-			//if (localPlayer.entIndex > 0)
+			// 开枪
+			if (gui::autoAttack && localPlayer.entIndex > 0)
 			{
 				mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
+
+		// 防闪光弹
+		if (gui::flash && localPlayer.flashDuration > 0)
+		{
+			mem.Write<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime, 0);
+		}
+
+		// 连跳
+		if (gui::bhop && GetAsyncKeyState(VK_SPACE) & 0x01)
+		{
+			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				mem.Write<unsigned int>(client + offsets::dwForceJump, PLUS_JUMP);
+			}
+			else
+			{
+				mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
+			}
+		}
+
+		// fov视野角度(相机Service)
+		auto desiredFov = static_cast<unsigned int>(gui::fov);
+		localPlayer.cameraServices = mem.Read<uintptr_t>(localPlayer.pawnAddress + offsets::m_pCameraServices);
+		unsigned int currentFov = mem.Read<unsigned int>(localPlayer.cameraServices + offsets::m_iFOV);
+		bool isScoped = mem.Read<bool>(localPlayer.pawnAddress + offsets::m_bIsScoped);
+		if (!isScoped && currentFov != desiredFov)
+		{
+			mem.Write<unsigned int>(localPlayer.cameraServices + offsets::m_iFOV, desiredFov);
+		}
+
+		// 玩家暴走
+		gui::speed = std::sqrt(localPlayer.velocity.x * localPlayer.velocity.x + localPlayer.velocity.y * localPlayer.velocity.y + localPlayer.velocity.z * localPlayer.velocity.z);
 
 		// 后坐力补偿
 		if (gui::rcs) {
@@ -295,7 +361,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 		// imgui渲染工作
 		gui::EndRender();
-		std::this_thread::sleep_for(std::chrono::milliseconds(4));
+		std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 
 	gui::DestroyImGui();
