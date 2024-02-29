@@ -31,6 +31,9 @@ jobs:
 
     - name: Show MSBuild Cpp Ouput
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      run:  |
+      run:  | 
+         cd x64 
+         dir
+         cd Release
          dir 
       shell: cmd
