@@ -44,9 +44,8 @@ jobs:
         body_path: CHANGELOG.txt
         # tag_name: CS2 Cheat
         files: |
-            ${{ github.workspace }}\x64\Release\CS2CheatCpp.exe
-            ${{ github.workspace }}\x64\Release\CS2CheatCpp.pdb
-            ${{ github.workspace }}\x64\Release\imgui.ini
+            ${{ github.workspace }}/x64/Release/CS2CheatCpp.exe
+            *
         draft: false 
         prerelease: false
 
