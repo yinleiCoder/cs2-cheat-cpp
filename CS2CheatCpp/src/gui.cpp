@@ -3,7 +3,6 @@
 #include "../dependencies/ImGui/imgui_impl_dx11.h"
 #include "../dependencies/ImGui/imgui_impl_win32.h"
 #include <corecrt_math.h>
-#define _S(_LITERAL)    (const char*)u8##_LITERAL
 
 // ImGui Win32 Handler
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -256,38 +255,38 @@ void gui::Render() noexcept
 		//static bool show_demo_window = true;
 		//ImGui::ShowDemoWindow(&show_demo_window);
 		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
-		ImGui::Begin(_S("CS2外挂"), 0, window_flags);
+		ImGui::Begin("CS2 Cheat", 0, window_flags);
 		if (ImGui::BeginMenuBar())
 		{
-			if (ImGui::BeginMenu(_S("菜单")))
+			if (ImGui::BeginMenu("Menu"))
 			{
-				ImGui::MenuItem(_S("退出"), NULL, &exit);
+				ImGui::MenuItem(("Exit"), NULL, &exit);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::Text(_S("运行环境: ImGui (%s) (%d)"), IMGUI_VERSION, IMGUI_VERSION_NUM);
+		ImGui::Text("Runtime Environment: ImGui (%s) (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
 		ImGui::Spacing();
 	
-		if (ImGui::CollapsingHeader(_S("使用前必看")))
+		if (ImGui::CollapsingHeader("Must Read Before Use"))
 		{
-			ImGui::SeparatorText(_S("使用说明"));
-			ImGui::TextWrapped(_S("显示和隐藏本菜单请按键盘上的"));
-			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), _S(" INSERT键"));
-			ImGui::TextWrapped(_S("下载zip文件，并解压到您的电脑上，进入解压后的文件夹，先打开CS2游戏并进入匹配对局，然后双击CS2CheatCpp.exe运行外挂即可"));
+			ImGui::SeparatorText("Usage Instructions");
+			ImGui::TextWrapped("To show or hide this menu, press the key on the keyboard");
+			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " INSERT key");
+			ImGui::TextWrapped("Download the zip file and extract it to your computer.Enter the extracted folder, open the CS2 game, join a matchmaking session, and then double - click CS2Cheat.exe to run the program.");
 
-			ImGui::SeparatorText(_S("Github主页"));
+			ImGui::SeparatorText("Github Homepage");
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
 
-			ImGui::SeparatorText(_S("软件下载地址"));
+			ImGui::SeparatorText("Software Download");
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
 
-			ImGui::SeparatorText(_S("免责声明"));
-			ImGui::TextWrapped(_S("此项目仅供C++、逆向工程爱好者代码参考和学习交流，请勿运行本程序在真实的匹配对局破坏游戏公平，且不要将此软件运用于商业目的进行盈利，与作者无关，后果请自行承担！！！"));
+			ImGui::SeparatorText("Disclaimer");
+			ImGui::TextWrapped("This project is intended solely for C++ and reverse engineering enthusiasts for code reference and learning purposes.Please refrain from running this program in real match scenarios to avoid disrupting the fairness of the game.Do not use this software for commercial purposes or profit, and the author is not responsible for any consequences.Use it at your own risk");
 		}
 
-		if (ImGui::CollapsingHeader(_S("窗口选项")))
+		if (ImGui::CollapsingHeader("Window Options"))
 		{
 			if (ImGui::BeginTable("split", 3))
 			{
@@ -305,29 +304,29 @@ void gui::Render() noexcept
 			}
 		}
 
-		ImGui::Text(_S("玩家当前移动速度: %d"), speed);
-		ImGui::Text(_S("玩家最大移动速度: %d"), maxSpeed);
-		ImGui::Checkbox(_S("方框透视"), &boxEsp);
-		ImGui::Checkbox(_S("人物发光"), &playerBodyGlow);
-		ImGui::Checkbox(_S("玩家剩余血量"), &playerHealth);
-		ImGui::SetItemTooltip(_S("血量会在敌人旁边实时绘制成绿色矩形"));
-		ImGui::Checkbox(_S("自瞄锁头"), &aimbot);
-		ImGui::SetItemTooltip(_S("此选项需要玩家自己开枪，或者配合打开自动开枪选项，本选项配合雷达选项可实现敌人与墙体的遮挡可见性检测"));
-		ImGui::Checkbox(_S("雷达"), &radar);
-		ImGui::SetItemTooltip(_S("此选项会在地图上一直显示敌人的雷达，但会屏蔽敌人可见性检测自瞄锁头"));
-		ImGui::Checkbox(_S("自动开枪"), &autoAttack);
-		ImGui::SetItemTooltip(_S("此选项配合需要同时打开自瞄锁头和本选项"));
-		ImGui::Checkbox(_S("RCS后座力补偿"), &rcs);
-		ImGui::Checkbox(_S("抗闪光"), &flash);
-		ImGui::Checkbox(_S("连跳"), &bhop);
-		ImGui::SetItemTooltip(_S("连续按住键盘上的空格键"));
-		ImGui::SliderInt(_S("视野角度"), &fov, 0, 180);
+		ImGui::Text("Player current movement speed: %d", speed);
+		ImGui::Text("Player maximum movement speed: %d", maxSpeed);
+		ImGui::Checkbox("Box perspective", &boxEsp);
+		ImGui::Checkbox("Player body glow", &playerBodyGlow);
+		ImGui::Checkbox("Player remaining health", &playerHealth);
+		ImGui::SetItemTooltip("Health is displayed in real-time as a green rectangle next to the enemy");
+		ImGui::Checkbox("Auto-aim (aimbot)", &aimbot);
+		ImGui::SetItemTooltip("This option requires the player to manually fire, or in conjunction with the automatic firing option. When combined with turning off the radar option, it enables visibility detection for enemies behind walls");
+		ImGui::Checkbox("Radar", &radar);
+		ImGui::SetItemTooltip("This option will continuously display the radar for enemies on the map, but it will block visibility detection and auto-aim (aimbot)");
+		ImGui::Checkbox("Automatic firing", &autoAttack);
+		ImGui::SetItemTooltip("This option needs to be enabled in conjunction with auto-aim (aimbot)");
+		ImGui::Checkbox("RCS (Recoil Control System) ", &rcs);
+		ImGui::Checkbox("Anti-flash", &flash);
+		ImGui::Checkbox("Bunny hop", &bhop);
+		ImGui::SetItemTooltip("Hold down the space bar on the keyboard continuously");
+		ImGui::SliderInt("fov (Field of view)", &fov, 0, 180);
 		if (bombPlanted) {
-			ImGui::Text(_S("土匪已将炸弹安放，距离爆炸还剩 %d 秒"), bombTimeLeft);
+			ImGui::Text("The terrorist has planted the bomb. Time until explosion: %d seconds", bombTimeLeft);
 		}
 		else 
 		{
-			ImGui::Text(_S("土匪目前还没安装炸弹，快去剿灭他们！"));
+			ImGui::Text("The terrorists haven't planted the bomb yet!!!");
 		}
 
 		ImGui::End();
