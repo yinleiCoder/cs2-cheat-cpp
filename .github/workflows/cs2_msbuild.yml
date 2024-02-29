@@ -40,7 +40,8 @@ jobs:
 
     - name: Release CS2 Cheat 
       uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/')
+      if: true 
+      # startsWith(github.ref, 'refs/tags/')
       with: 
         body_path: CHANGELOG.txt
         files: |
