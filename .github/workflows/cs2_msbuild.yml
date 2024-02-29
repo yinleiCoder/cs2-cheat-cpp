@@ -3,8 +3,6 @@ name: CS2 Cheat MSBuild
 on:
   push:
     branches: [ "main" ]
-    tags:
-        - "v*.*.*"
   pull_request:
     branches: [ "main" ]
 
@@ -42,11 +40,12 @@ jobs:
 
     - name: Release CS2 Cheat 
       uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
       with: 
         body_path: CHANGELOG.txt
         files: |
-            /x64/Release/CS2CheatCpp.exe
-            /x64/Release/CS2CheatCpp.pdb
-            /x64/Release/imgui.ini
+            ${{ github.workspace }}/x64/Release/CS2CheatCpp.exe
+            ${{ github.workspace }}/x64/Release/CS2CheatCpp.pdb
+            ${{ github.workspace }}/x64/Release/imgui.ini
         draft: false 
         prerelease: false
