@@ -13,14 +13,14 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1729348;
-	constexpr std::ptrdiff_t dwEntityList = 0x18B3FA8;
-	constexpr std::ptrdiff_t dwViewAngles = 0x19233E0;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19154C0;
-	constexpr std::ptrdiff_t dwForceJump = 0x17226E0;
-	constexpr std::ptrdiff_t dwForceAttack = 0x17221D0;
-	constexpr std::ptrdiff_t dwGameRules = 0x1910FC0;
-	constexpr std::ptrdiff_t dwSensitivity = 0x1911D08;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1730118;
+	constexpr std::ptrdiff_t dwEntityList = 0x18BBAF8;
+	constexpr std::ptrdiff_t dwViewAngles = 0x1929730;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x191CF30;
+	constexpr std::ptrdiff_t dwForceJump = 0x17294A0;
+	constexpr std::ptrdiff_t dwForceAttack = 0x1728F90;
+	constexpr std::ptrdiff_t dwGameRules = 0x1918A30;
+	constexpr std::ptrdiff_t dwSensitivity = 0x1919778;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
 	// client.dll.hpp 
@@ -29,7 +29,7 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_iTeamNum = 0x3CB; // uint8_t
 	constexpr std::ptrdiff_t m_vOldOrigin = 0x127C; // Vector
 	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float C_CSPlayerPawnBase { // C_BasePlayerPawn
-	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t
+	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t C_BaseEntity 
 	constexpr std::ptrdiff_t m_flDetectedByEnemySensorTime = 0x1440; // GameTime_t
 	constexpr std::ptrdiff_t m_iszPlayerName = 0x638; // char[128]
 	constexpr std::ptrdiff_t m_entitySpottedState = 0x1698; // EntitySpottedState_t C_CSPlayerPawnBase 

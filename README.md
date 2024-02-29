@@ -6,7 +6,7 @@
 
 - 方框透视
 - 骨骼透视
-- 人物身体发光
+- 玩家身体发光
 - 实时显示剩余血条
 - 自瞄锁头并开枪射击
 - 枪后坐力补偿
@@ -22,12 +22,6 @@
 ## Usage
 
 See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for decorated Changelogs. Reading the changelogs is a good way to keep up to date with the things `CS2CheatCPP` has to offer, and maybe will give you ideas of some features that you've been ignoring until now!
-
-## Thanks
-
-请作者喝杯咖啡？感谢您的支持！
-
-![wechat](./wechat.jpg)
 
 ## Notices
 
@@ -48,3 +42,9 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 - [unknowncheats](https://www.unknowncheats.me/forum/index.php)
 - [句柄劫持绕过反作弊系统](https://github.com/Apxaey/Handle-Hijacking-Anti-Cheat-Bypass)
 - and so on
+
+## Thanks
+
+请作者喝杯咖啡？感谢您的支持！
+
+![wechat](./wechat.jpg)

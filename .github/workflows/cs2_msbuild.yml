@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  SOLUTION_FILE_PATH: .
+  SOLUTION_FILE_PATH: CS2CheatCpp.sln
   BUILD_CONFIGURATION: Release
 
 permissions:
@@ -25,6 +25,12 @@ jobs:
 
     - name: Build
       working-directory: ${{env.GITHUB_WORKSPACE}}
-      # Add additional options to the MSBuild command line here (like platform or verbosity level).
-      # See https://docs.microsoft.com/visualstudio/msbuild/msbuild-command-line-reference
-      run: msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform=x64 ${{env.SOLUTION_FILE_PATH}}
+      run: |
+        msbuild -version    
+        msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" -t:rebuild -verbosity:diag ${{env.SOLUTION_FILE_PATH}}
+
+    - name: Show Ouput Files
+      working-directory: ${{env.GITHUB_WORKSPACE}}
+      run:  |
+         dir 
+      shell: cmd
