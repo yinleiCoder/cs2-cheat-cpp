@@ -49,3 +49,8 @@ jobs:
             ${{ github.workspace }}\x64\Release\imgui.ini
         draft: false 
         prerelease: false
+
+    - name: Show Release Files After
+      run: |
+        echo "Files in Release Directory After:"
+        ls ${{ github.workspace }}/x64/Release
