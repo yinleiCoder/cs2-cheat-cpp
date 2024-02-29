@@ -29,7 +29,7 @@ jobs:
         msbuild -version    
         msbuild /m /p:Configuration=${{env.BUILD_CONFIGURATION}} /p:Platform="x64" -t:rebuild -verbosity:diag ${{env.SOLUTION_FILE_PATH}}
 
-    - name: Show Ouput Files
+    - name: Show MSBuild Cpp Ouput
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run:  |
          dir 
