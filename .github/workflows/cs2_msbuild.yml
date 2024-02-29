@@ -3,6 +3,8 @@ name: CS2 Cheat MSBuild
 on:
   push:
     branches: [ "main" ]
+    tags:
+        - "v*.*.*"
   pull_request:
     branches: [ "main" ]
 
@@ -11,7 +13,7 @@ env:
   BUILD_CONFIGURATION: Release
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -37,3 +39,14 @@ jobs:
          cd Release
          dir 
       shell: cmd
+
+    - name: Release CS2 Cheat 
+      uses: softprops/action-gh-release@v1
+      with: 
+        body_path: CHANGELOG.txt
+        files: |
+            /x64/Release/CS2CheatCpp.exe
+            /x64/Release/CS2CheatCpp.pdb
+            /x64/Release/imgui.ini
+        draft: false 
+        prerelease: false
