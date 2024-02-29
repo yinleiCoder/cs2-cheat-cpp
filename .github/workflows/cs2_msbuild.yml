@@ -42,7 +42,7 @@ jobs:
       # if: startsWith(github.ref, 'refs/tags/')
       with: 
         body_path: CHANGELOG.txt
-        tag_name: CS2 Cheat
+        # tag_name: CS2 Cheat
         files: |
             ${{ github.workspace }}/x64/Release/CS2CheatCpp.exe
             ${{ github.workspace }}/x64/Release/CS2CheatCpp.pdb
