@@ -44,13 +44,6 @@ jobs:
         body_path: CHANGELOG.txt
         # tag_name: CS2 Cheat
         files: |
-            ./x64/*
             ./x64/Release/CS2CheatCpp.exe
-            *
         draft: false 
         prerelease: false
-
-    - name: Show Release Files After
-      run: |
-        echo "Files in Release Directory After:"
-        ls ${{ github.workspace }}/x64/Release
