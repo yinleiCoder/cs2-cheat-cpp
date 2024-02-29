@@ -2,9 +2,8 @@ name: CS2 Cheat MSBuild
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - "v*.*.*"
 
 env:
   SOLUTION_FILE_PATH: CS2CheatCpp.sln
@@ -40,10 +39,10 @@ jobs:
 
     - name: Release CS2 Cheat 
       uses: softprops/action-gh-release@v1
-      if: true 
-      # startsWith(github.ref, 'refs/tags/')
+      # if: startsWith(github.ref, 'refs/tags/')
       with: 
         body_path: CHANGELOG.txt
+        tag_name: CS2 Cheat
         files: |
             ${{ github.workspace }}/x64/Release/CS2CheatCpp.exe
             ${{ github.workspace }}/x64/Release/CS2CheatCpp.pdb
