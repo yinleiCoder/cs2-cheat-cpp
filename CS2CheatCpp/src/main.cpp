@@ -9,6 +9,7 @@
 #include "vector.h"
 #include "render.h"
 #include "bone.hpp"
+#include "weapon.hpp"
 #include "entity.h"
 
 namespace offsets {
@@ -48,6 +49,10 @@ namespace offsets {
 	constexpr std::ptrdiff_t m_bIsScoped = 0x1400; // bool
 	constexpr std::ptrdiff_t m_vecAbsVelocity = 0x3D8; // Vector
 	constexpr std::ptrdiff_t m_bBombPlanted = 0x9DD; // bool C_CSGameRules 
+	constexpr std::ptrdiff_t m_pClippingWeapon = 0x1308; // C_CSWeaponBase*
+	constexpr std::ptrdiff_t m_iItemDefinitionIndex = 0x1BA; // uint16_t
+	constexpr std::ptrdiff_t m_AttributeManager = 0x1098; // C_AttributeContainer C_EconEntity
+	constexpr std::ptrdiff_t m_Item = 0x50; // C_EconItemView
 }
 
 struct C_UTL_VECTOR
@@ -109,7 +114,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
 			if (bombPlanted)
 			{
-				gui::bombPlanted = true;
+				gui::enableBombPlanted = true;
 				/*for (int i = 0;i < 40;i++)
 				{
 					bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
@@ -126,7 +131,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			else
 			{
 				gui::bombTimeLeft = -1;
-				gui::bombPlanted = false;
+				gui::enableBombPlanted = false;
 			}
 		}
 
@@ -158,7 +163,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (!list_entry2) {
 				continue;
 			}
+
 			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
+
 			// 扫描到"我"就排除我的信息
 			if (!currentPawn || currentPawn == localPlayer.pawnAddress) {
 				continue;
@@ -170,24 +177,25 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (team == localPlayer.team) {
 				continue;
 			}
-			// 玩家的真实姓名
 			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
 
-			// currentPawn有生命值等信息,而玩家姓名在currentController下
+			// currentPawn有生命值、武器等信息,而玩家姓名在currentController下
 			int health = mem.Read<int>(currentPawn + offsets::m_iHealth);
 			const auto lifeState = mem.Read<unsigned int>(currentPawn + offsets::m_lifeState);
 			if (health <= 0 || health > 100 || lifeState != 256) {
 				continue;
 			}
+			auto currentWeapon = mem.Read<uintptr_t>(currentPawn + offsets::m_pClippingWeapon);
+			short weaponDefinitionIndex = mem.Read<short>(currentWeapon + offsets::m_AttributeManager + offsets::m_Item + offsets::m_iItemDefinitionIndex);
 
 			// 获取雷达状态并设置敌人显示在雷达上
-			if (gui::radar) {
+			if (gui::enableRadar) {
 				bool spotted = mem.Read<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted);
 				mem.Write<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
 			}
 
 			// 玩家身体发光
-			if (gui::playerBodyGlow) {
+			if (gui::enableBodyGlow) {
 				mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
 			}
 			
@@ -202,12 +210,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			entity.origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
 			entity.viewOffset = mem.Read<Vector3>(currentPawn+offsets::m_vecViewOffset);
 			entity.distance = Vector3::distance(entity.origin, localPlayer.origin);
+			entity.currentWeaponIndex = weaponDefinitionIndex;
+			entity.currentWeaponName = getWeaponName(weaponDefinitionIndex);
 
 			// 获取玩家的头坐标实现锁头
 			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
 			// 获取骨骼信息绘制玩家骨骼
 			const auto boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
-			//Vector3 head = { entity.origin.x, entity.origin.y, entity.origin.z + 75.f };
 			entity.head = mem.Read<Vector3>(boneMatrix + bones::head * 32);
 
 			// 将收集好的所有玩家信息存储起来
@@ -217,66 +226,80 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			Vector3 screenPos;
 			Vector3 screenHead;
 
-			RGB enemy = { 255, 0, 0 };
-			RGB hp = { 0, 255, 0 };
-			//RGB bone = { 255, 255, 255 };
-
 			if (Vector3::word_to_screen(view_matrix, entity.origin, screenPos) &&
 				Vector3::word_to_screen(view_matrix, entity.head, screenHead) &&
 				entity.origin.x != 0) {
 				float height = screenPos.y - screenHead.y;
-				//float headHeight = height / 8;
+				float headHeight = height / 8;
 				float width = height / 2.4f;
 
-				if (gui::boxEsp) {
-					Render::DrawRect(
+				if (gui::enableBoxEsp) {
+					render::DrawRect(
 						screenHead.x - width / 2,
 						screenHead.y,
 						width,
 						height,
-						enemy,
+						render::enemy,
 						1.5,
 						false,
 						255
 					);
+					render::DrawTextContent(
+						screenHead.x + width / 2,
+						screenHead.y,
+						render::name,
+						entity.name.c_str()
+					);			
 				}
 
-				if (gui::playerHealth) {
-					Render::DrawRect(
+				if (gui::enableWeapon) {
+					render::DrawTextContent(
+						screenHead.x,
+						screenHead.y + height / 4,
+						render::weapon,
+						entity.currentWeaponName
+					);
+				}
+
+				if (gui::enableHealth) {
+					render::DrawRect(
 						screenHead.x - (width / 2 + 10),
 						screenHead.y + (height * (100 - health) / 100),
 						3,
 						height - (height * (100 - health) / 100),
-						hp,
+						render::hp,
 						1.5,
 						true,
 						255
 					);
 				}
+
+				for (int i = 0; i < sizeof(boneConnections) / sizeof(boneConnections[0]); i++) {
+					int bone1 = boneConnections[i].bone1;
+					int bone2 = boneConnections[i].bone2;
+
+					Vector3 vectorBone1 = mem.Read<Vector3>(boneMatrix + bone1 * 32);
+					Vector3 vectorBone2 = mem.Read<Vector3>(boneMatrix + bone2 * 32);
+
+					Vector3 b1;
+					Vector3 b2;
+					Vector3::word_to_screen(view_matrix, vectorBone1, b1);
+					Vector3::word_to_screen(view_matrix, vectorBone2, b2);
+					render::Circle(
+						screenHead.x,
+						screenHead.y,
+						headHeight - 3,
+						render::bone,
+						false, 
+						255
+					);
+					render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
+				}
 			}
-			/*Render::Circle(
-				screenHead.x,
-				screenHead.y,
-				headHeight - 3,
-				bone
-			);
-
-			for (int i = 0; i < sizeof(boneConnections) / sizeof(boneConnections[0]); i++) {
-				int bone1 = boneConnections[i].bone1;
-				int bone2 = boneConnections[i].bone2;
-
-				Vector3 vectorBone1 = mem.Read<Vector3>(boneArray + bone1*32);
-				Vector3 vectorBone2 = mem.Read<Vector3>(boneArray + bone2*32);
-
-				Vector3 b1 = vectorBone1.WorldConvertToScreen(view_matrix);
-				Vector3 b2 = vectorBone1.WorldConvertToScreen(view_matrix);
-
-				Render::Line(b1.x, b1.y, b2.x, b2.y, bone, 2.0);
-			}*/
 		}
 
 		// 自瞄锁头并开枪
-		if (gui::aimbot && entities.size() > 0 && !gui::radar && entities[0].spotted)
+		if (gui::enableAimbot && entities.size() > 0 && !gui::enableRadar && entities[0].spotted)
 		{
 			// 扫描距离我最近的敌人
 			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
@@ -291,7 +314,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			mem.Write<Vector3>(client + offsets::dwViewAngles, newAnglesVec3);
 
 			// 开枪
-			if (gui::autoAttack && localPlayer.entIndex > 0)
+			if (gui::enableAutoAttack && localPlayer.entIndex > 0)
 			{
 				mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -301,13 +324,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		// 防闪光弹
-		if (gui::flash && localPlayer.flashDuration > 0)
+		if (gui::enableFlash && localPlayer.flashDuration > 0)
 		{
 			mem.Write<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime, 0);
 		}
 
 		// 连跳
-		if (gui::bhop && GetAsyncKeyState(VK_SPACE) & 0x01)
+		if (gui::enableBhop && GetAsyncKeyState(VK_SPACE) & 0x01)
 		{
 			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
 			{
@@ -334,7 +357,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		gui::speed = std::sqrt(localPlayer.velocity.x * localPlayer.velocity.x + localPlayer.velocity.y * localPlayer.velocity.y + localPlayer.velocity.z * localPlayer.velocity.z);
 
 		// 后坐力补偿
-		if (gui::rcs) {
+		if (gui::enableRcs) {
 			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + offsets::m_iShotsFired);// 开枪次数
 			auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
 			auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);

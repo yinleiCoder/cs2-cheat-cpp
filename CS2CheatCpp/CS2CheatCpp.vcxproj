@@ -175,6 +175,7 @@
     <ClInclude Include="src\memory\memory.h" />
     <ClInclude Include="src\render.h" />
     <ClInclude Include="src\vector.h" />
+    <ClInclude Include="src\weapon.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CS2CheatCpp1.rc" />

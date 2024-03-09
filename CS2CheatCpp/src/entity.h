@@ -1,6 +1,7 @@
 #pragma once
 #include "vector.h"
 #include <string>
+#include <vector>
 
 class Entity
 {
@@ -12,14 +13,17 @@ public:
 	int health;
 	int team;
 	float flashDuration;
+	float distance;
 	unsigned int fFlag;
 	unsigned int lifeState;
 	int entIndex;
+	short currentWeaponIndex;
+	const char* currentWeaponName;
 	bool spotted;
 	Vector3 head;
 	Vector3 origin;
 	Vector3 viewOffset;
 	Vector3 aimPunch;
 	Vector3 velocity;
-	float distance;
+	std::vector<Vector3> bones;
 };

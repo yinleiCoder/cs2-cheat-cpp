@@ -1,16 +1,18 @@
-# CS2游戏外挂(C++)
+# CS2 Cheat With C++
 
-> 最近更新：2024年2月29日 21:55
+> Latest Update：2024.03.09 16:39
+
+![external](./external.png)
 
 ## Features
 
 - 方框透视
 - 骨骼透视
 - 玩家身体发光
-- 实时显示剩余血条
+- 地图扫描敌人雷达
+- 实时显示剩余血条、玩家名字、玩家持有的武器
 - 自瞄锁头并开枪射击
 - 枪后坐力补偿
-- 地图扫描敌人雷达
 - 防闪光弹
 - 连跳
 - 玩家当前移动速度监控
@@ -45,6 +47,8 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 
 ## Thanks
 
-请作者喝杯咖啡？感谢您的支持！
-
 ![wechat](./wechat.jpg)
+
+## 免责声明
+
+本外挂功能薄弱，请勿用于商业盈利及真实匹配对局，本代码仅供学习交流参考使用，一切后果请自行承担！！！

@@ -304,24 +304,26 @@ void gui::Render() noexcept
 			}
 		}
 
-		ImGui::Text("Player current movement speed: %d", speed);
-		ImGui::Text("Player maximum movement speed: %d", maxSpeed);
-		ImGui::Checkbox("Box perspective", &boxEsp);
-		ImGui::Checkbox("Player body glow", &playerBodyGlow);
-		ImGui::Checkbox("Player remaining health", &playerHealth);
+		ImGui::Text("Current movement speed: %d", speed);
+		ImGui::Text("Maximum movement speed: %d", maxSpeed);
+		ImGui::Checkbox("Box perspective", &enableBoxEsp);
+		ImGui::Checkbox("Bone perspective", &enableBoneEsp);
+		ImGui::Checkbox("Body glow", &enableBodyGlow);
+		ImGui::Checkbox("Remaining health", &enableHealth);
 		ImGui::SetItemTooltip("Health is displayed in real-time as a green rectangle next to the enemy");
-		ImGui::Checkbox("Auto-aim (aimbot)", &aimbot);
+		ImGui::Checkbox("Weapon", &enableWeapon);
+		ImGui::Checkbox("Auto-aim (aimbot)", &enableAimbot);
 		ImGui::SetItemTooltip("This option requires the player to manually fire, or in conjunction with the automatic firing option. When combined with turning off the radar option, it enables visibility detection for enemies behind walls");
-		ImGui::Checkbox("Radar", &radar);
+		ImGui::Checkbox("Radar", &enableRadar);
 		ImGui::SetItemTooltip("This option will continuously display the radar for enemies on the map, but it will block visibility detection and auto-aim (aimbot)");
-		ImGui::Checkbox("Automatic firing", &autoAttack);
+		ImGui::Checkbox("Automatic firing", &enableAutoAttack);
 		ImGui::SetItemTooltip("This option needs to be enabled in conjunction with auto-aim (aimbot)");
-		ImGui::Checkbox("RCS (Recoil Control System) ", &rcs);
-		ImGui::Checkbox("Anti-flash", &flash);
-		ImGui::Checkbox("Bunny hop", &bhop);
+		ImGui::Checkbox("RCS (Recoil Control System) ", &enableRcs);
+		ImGui::Checkbox("Anti-flash", &enableFlash);
+		ImGui::Checkbox("Bunny hop", &enableBhop);
 		ImGui::SetItemTooltip("Hold down the space bar on the keyboard continuously");
 		ImGui::SliderInt("fov (Field of view)", &fov, 0, 180);
-		if (bombPlanted) {
+		if (enableBombPlanted) {
 			ImGui::Text("The terrorist has planted the bomb. Time until explosion: %d seconds", bombTimeLeft);
 		}
 		else 
