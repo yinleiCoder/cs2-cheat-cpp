@@ -271,7 +271,7 @@ namespace hj {
 			clientID.UniqueProcess = (DWORD*)hInfo->Handles[i].ProcessId;
 
 			//if procHandle is open, close it
-			procHandle ? CloseHandle(procHandle) : 0;
+			//procHandle ? CloseHandle(procHandle) : 0;
 
 			//create a a handle with duplicate only permissions to the process with a handle to our target. NOT OUR TARGET.
 			NtRet = NtOpenProcess(&procHandle, PROCESS_DUP_HANDLE, &Obj_Attribute, &clientID);

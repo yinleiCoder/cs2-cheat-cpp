@@ -1,8 +1,9 @@
 ﻿#include <thread>
+#include <chrono>
 #include <vector>
 #include <string>
-#include <functional>
 #include <algorithm>
+#include <functional>
 #include <iostream>
 #include "gui.h"
 #include "memory/memory.h"
@@ -14,14 +15,14 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x1730118;
-	constexpr std::ptrdiff_t dwEntityList = 0x18BBAF8;
-	constexpr std::ptrdiff_t dwViewAngles = 0x1929730;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x191CF30;
-	constexpr std::ptrdiff_t dwForceJump = 0x17294A0;
-	constexpr std::ptrdiff_t dwForceAttack = 0x1728F90;
-	constexpr std::ptrdiff_t dwGameRules = 0x1918A30;
-	constexpr std::ptrdiff_t dwSensitivity = 0x1919778;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17371A8;
+	constexpr std::ptrdiff_t dwEntityList = 0x18C2D58;
+	constexpr std::ptrdiff_t dwViewAngles = 0x19309B0;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19241A0;
+	constexpr std::ptrdiff_t dwForceJump = 0x1730530;
+	constexpr std::ptrdiff_t dwForceAttack = 0x1730020;
+	constexpr std::ptrdiff_t dwGameRules = 0x191FCA0;
+	constexpr std::ptrdiff_t dwSensitivity = 0x19209E8;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
 
 	// client.dll.hpp 
@@ -80,6 +81,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 	Entity localPlayer;
 	std::vector<Entity> entities;
 	entities.reserve(64);
+
 	bool bombPlanted = false;
 	static auto oldPunch = Vector3{};
 
@@ -240,9 +242,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 						width,
 						height,
 						render::enemy,
-						1.5,
-						false,
-						255
+						1,
+						true,
+						100
 					);
 					render::DrawTextContent(
 						screenHead.x + width / 2,
@@ -254,8 +256,8 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 				if (gui::enableWeapon) {
 					render::DrawTextContent(
-						screenHead.x,
-						screenHead.y + height / 4,
+						screenHead.x - width / 2,
+						screenHead.y + height,
 						render::weapon,
 						entity.currentWeaponName
 					);
@@ -285,14 +287,6 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 					Vector3 b2;
 					Vector3::word_to_screen(view_matrix, vectorBone1, b1);
 					Vector3::word_to_screen(view_matrix, vectorBone2, b2);
-					render::Circle(
-						screenHead.x,
-						screenHead.y,
-						headHeight - 3,
-						render::bone,
-						false, 
-						255
-					);
 					render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
 				}
 			}
@@ -369,7 +363,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 				continue;
 			}
 			if (shotsFired > 1) {// 如果我们开枪了，就计算后坐力补偿
-				Vector3 viewAngles = mem.Read<Vector3>(client+offsets::dwViewAngles);
+				Vector3 viewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
 				Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
 
 				int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));
