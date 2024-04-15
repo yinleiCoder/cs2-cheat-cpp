@@ -1,12 +1,17 @@
-﻿#include <thread>
-#include <chrono>
-#include <vector>
+﻿#define _CRT_SECURE_NO_WARNINGS
+
+#include <iostream>
+#include <fstream>
 #include <string>
+#include <sstream>
+#include <vector>
 #include <algorithm>
 #include <functional>
-#include <iostream>
-#include "gui.h"
+#include <thread>
+#include <chrono>
+
 #include "memory/memory.h"
+#include "gui.h"
 #include "vector.h"
 #include "render.h"
 #include "bone.hpp"
@@ -15,15 +20,17 @@
 
 namespace offsets {
 	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17371A8;
-	constexpr std::ptrdiff_t dwEntityList = 0x18C2D58;
-	constexpr std::ptrdiff_t dwViewAngles = 0x19309B0;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19241A0;
-	constexpr std::ptrdiff_t dwForceJump = 0x1730530;
-	constexpr std::ptrdiff_t dwForceAttack = 0x1730020;
-	constexpr std::ptrdiff_t dwGameRules = 0x191FCA0;
-	constexpr std::ptrdiff_t dwSensitivity = 0x19209E8;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17361E8;
+	constexpr std::ptrdiff_t dwEntityList = 0x18C1DB8;
+	constexpr std::ptrdiff_t dwViewAngles = 0x192F940;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x19231B0;
+	constexpr std::ptrdiff_t dwGameRules = 0x191EC70;
+	constexpr std::ptrdiff_t dwSensitivity = 0x191F9B8;
 	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
+
+	// server.dll.hpp
+	constexpr uint64_t IN_ATTACK = 0x1;
+	constexpr uint64_t IN_JUMP = 0x2;
 
 	// client.dll.hpp 
 	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
@@ -62,11 +69,28 @@ struct C_UTL_VECTOR
 	DWORD_PTR data = 0;
 };
 
+
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 {
-	auto mem = Memory("cs2.exe");
-	const auto client = mem.GetModuleAddress("client.dll");
+	std::string logFileName = "CS2_Cheat_Log.txt";
+	std::ofstream fout(logFileName);
+	fout.seekp(std::ios::beg);
+	fout << "[Tip]: After running this program, please make sure to read the software usage instructions. If it doesn't work, please copy this log file record to the GitHub repository and submit an issue, or directly contact the author via WeChat at yl1099129793. The author has limited capacity and cannot synchronously update CS2 game patch. If urgently needed, you can fork this repository and modify offsets to build with the latest value." << std::endl;
 
+	auto mem = Memory("cs2.exe");
+	if (mem.GetProcessHandle() == nullptr) 
+	{
+		auto now = std::chrono::system_clock::now();
+		auto t_now = std::chrono::system_clock::to_time_t(now);
+		auto tm_now = std::localtime(&t_now);
+		std::stringstream ss;
+		ss << std::put_time(tm_now, "%Y/%m/%d %H:%M:%S");
+		fout << "["<< ss.str() <<"]" << "Please run this cs2 cheat app after enter cs2 game!" << std::endl;
+	}
+	const auto client = mem.GetModuleAddress("client.dll");
+	const auto server = mem.GetModuleAddress("server.dll");
+
+	const unsigned int INAIR = 65664;// 在空中
 	const unsigned int STANDING = 65665;// 站立
 	const unsigned int CROUCHING = 65667;// 蹲伏
 	const unsigned int PLUS_JUMP = 65537;// +jump
@@ -84,12 +108,14 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 	bool bombPlanted = false;
 	static auto oldPunch = Vector3{};
+	static auto velocity = Vector3{};
 
 	while (gui::exit) 
 	{
 		entities.clear();
 
-		if (!gui::exit) {
+		if (!gui::exit) 
+		{
 			break;
 		}
 
@@ -141,19 +167,22 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		for (int playerIndex = 1; playerIndex < 64; ++playerIndex)
 		{
 			// 如果不是CS2游戏在前台就不绘制
-			if (!mem.InForeground()) {
+			if (!mem.InForeground()) 
+			{
 				continue;
 			}
 
 			// 根据entity_list获取第一个入口点
 			const auto list_entry = mem.Read<uintptr_t>(enity_list + (8 * (playerIndex & 0x7FFF) >> 9) + 16);// 16==0x10
-			if (!list_entry) {
+			if (!list_entry) 
+			{
 				continue;
 			}
 
 			// 获取currentController
 			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
-			if (!currentController) {
+			if (!currentController) 
+			{
 				continue;
 			}
 
@@ -162,21 +191,24 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 			// 通过pawnHandle和entityList获取第二个入口点和currentPawn
 			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawnHandle & 0x7FFF) >> 9) + 16);// 16==0x10
-			if (!list_entry2) {
+			if (!list_entry2) 
+			{
 				continue;
 			}
 
 			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
 
 			// 扫描到"我"就排除我的信息
-			if (!currentPawn || currentPawn == localPlayer.pawnAddress) {
+			if (!currentPawn || currentPawn == localPlayer.pawnAddress) 
+			{
 				continue;
 			}
 
 			// 通过currentController获取团队编号、姓名等信息
 			int team = mem.Read<int>(currentController + offsets::m_iTeamNum);
 			// 猪队友
-			if (team == localPlayer.team) {
+			if (team == localPlayer.team) 
+			{
 				continue;
 			}
 			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
@@ -184,15 +216,16 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			// currentPawn有生命值、武器等信息,而玩家姓名在currentController下
 			int health = mem.Read<int>(currentPawn + offsets::m_iHealth);
 			const auto lifeState = mem.Read<unsigned int>(currentPawn + offsets::m_lifeState);
-			if (health <= 0 || health > 100 || lifeState != 256) {
+			if (health <= 0 || health > 100 || lifeState != 256) 
+			{
 				continue;
 			}
 			auto currentWeapon = mem.Read<uintptr_t>(currentPawn + offsets::m_pClippingWeapon);
 			short weaponDefinitionIndex = mem.Read<short>(currentWeapon + offsets::m_AttributeManager + offsets::m_Item + offsets::m_iItemDefinitionIndex);
 
 			// 获取雷达状态并设置敌人显示在雷达上
-			if (gui::enableRadar) {
-				bool spotted = mem.Read<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted);
+			if (gui::enableRadar) 
+			{
 				mem.Write<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
 			}
 
@@ -218,29 +251,34 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			// 获取玩家的头坐标实现锁头
 			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
 			// 获取骨骼信息绘制玩家骨骼
-			const auto boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
-			entity.head = mem.Read<Vector3>(boneMatrix + bones::head * 32);
+			entity.boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
+			entity.head = mem.Read<Vector3>(entity.boneMatrix + bones::head * 32);
 
-			// 将收集好的所有玩家信息存储起来
 			entities.push_back(entity);
+		}
 
+		// 根据收集的数据进行绘制
+		for (auto& player : entities) 
+		{
 			// 准备绘制需要的数据
 			Vector3 screenPos;
 			Vector3 screenHead;
 
-			if (Vector3::word_to_screen(view_matrix, entity.origin, screenPos) &&
-				Vector3::word_to_screen(view_matrix, entity.head, screenHead) &&
-				entity.origin.x != 0) {
+			if (Vector3::word_to_screen(view_matrix, player.origin, screenPos) &&
+				Vector3::word_to_screen(view_matrix, player.head, screenHead) &&
+				player.origin.x != 0) 
+			{
 				float height = screenPos.y - screenHead.y;
 				float headHeight = height / 8;
 				float width = height / 2.4f;
 
-				if (gui::enableBoxEsp) {
+				if (gui::enableBoxEsp) 
+				{
 					render::DrawRect(
 						screenHead.x - width / 2,
-						screenHead.y,
+						screenHead.y - headHeight,
 						width,
-						height,
+						height + headHeight,
 						render::enemy,
 						1,
 						true,
@@ -250,44 +288,63 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 						screenHead.x + width / 2,
 						screenHead.y,
 						render::name,
-						entity.name.c_str()
-					);			
+						player.name.c_str()
+					);
 				}
 
-				if (gui::enableWeapon) {
+				if (gui::enableWeapon) 
+				{
 					render::DrawTextContent(
 						screenHead.x - width / 2,
 						screenHead.y + height,
 						render::weapon,
-						entity.currentWeaponName
+						player.currentWeaponName
 					);
 				}
 
-				if (gui::enableHealth) {
+				if (gui::enableHealth)
+				{
 					render::DrawRect(
 						screenHead.x - (width / 2 + 10),
-						screenHead.y + (height * (100 - health) / 100),
+						screenHead.y + (height * (100 - player.health) / 100) - headHeight,
 						3,
-						height - (height * (100 - health) / 100),
+						height - (height * (100 - player.health) / 100) + headHeight,
 						render::hp,
 						1.5,
 						true,
 						255
 					);
+					render::DrawTextContent(
+						screenHead.x - (width / 2 + 10) - 8,
+						screenHead.y + (height * (100 - player.health) / 100) - headHeight - 20,
+						render::hpText,
+						std::to_string(player.health).c_str()
+					);
 				}
 
-				for (int i = 0; i < sizeof(boneConnections) / sizeof(boneConnections[0]); i++) {
-					int bone1 = boneConnections[i].bone1;
-					int bone2 = boneConnections[i].bone2;
+				if (gui::enableBoneEsp) 
+				{
+					for (int i = 0; i < sizeof(boneConnections) / sizeof(boneConnections[0]); i++) {
+						int bone1 = boneConnections[i].bone1;
+						int bone2 = boneConnections[i].bone2;
 
-					Vector3 vectorBone1 = mem.Read<Vector3>(boneMatrix + bone1 * 32);
-					Vector3 vectorBone2 = mem.Read<Vector3>(boneMatrix + bone2 * 32);
+						Vector3 vectorBone1 = mem.Read<Vector3>(player.boneMatrix + bone1 * 32);
+						Vector3 vectorBone2 = mem.Read<Vector3>(player.boneMatrix + bone2 * 32);
 
-					Vector3 b1;
-					Vector3 b2;
-					Vector3::word_to_screen(view_matrix, vectorBone1, b1);
-					Vector3::word_to_screen(view_matrix, vectorBone2, b2);
-					render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
+						Vector3 b1;
+						Vector3 b2;
+						Vector3::word_to_screen(view_matrix, vectorBone1, b1);
+						Vector3::word_to_screen(view_matrix, vectorBone2, b2);
+						render::Circle(
+							screenHead.x,
+							screenHead.y,
+							1,
+							render::bone,
+							false,
+							255
+						);
+						render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
+					}
 				}
 			}
 		}
@@ -310,9 +367,9 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			// 开枪
 			if (gui::enableAutoAttack && localPlayer.entIndex > 0)
 			{
-				mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
+				//mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
+				//mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
@@ -329,12 +386,25 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				mem.Write<unsigned int>(client + offsets::dwForceJump, PLUS_JUMP);
+				//mem.Write<unsigned int>(client + offsets::dwForceJump, PLUS_JUMP);
 			}
 			else
 			{
-				mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
+				//mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
 			}
+		}
+
+		// 跳越射击
+		if (localPlayer.fFlag == INAIR && GetAsyncKeyState(VK_SPACE) & 0x01)
+		{
+			std::this_thread::sleep_for(std::chrono::milliseconds(2));
+			velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);
+			while (velocity.z > 18 || velocity.z < -18) {
+				velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);
+			}
+			//mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
+			std::this_thread::sleep_for(std::chrono::milliseconds(2));
+			//mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
 		}
 
 		// fov视野角度(相机Service)
@@ -351,18 +421,21 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		gui::speed = std::sqrt(localPlayer.velocity.x * localPlayer.velocity.x + localPlayer.velocity.y * localPlayer.velocity.y + localPlayer.velocity.z * localPlayer.velocity.z);
 
 		// 后坐力补偿
-		if (gui::enableRcs) {
+		if (gui::enableRcs)
+		{
 			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + offsets::m_iShotsFired);// 开枪次数
 			auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
 			auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);
 			auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
-			if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) {
+			if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) 
+			{
 				localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data + (aimPunchCache.count - 1) * sizeof(Vector3));
 			}
 			else {
 				continue;
 			}
-			if (shotsFired > 1) {// 如果我们开枪了，就计算后坐力补偿
+			if (shotsFired > 1)
+			{// 如果我们开枪了，就计算后坐力补偿
 				Vector3 viewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
 				Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
 
@@ -378,12 +451,13 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 		// imgui渲染工作
 		gui::EndRender();
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		//std::this_thread::sleep_for(std::chrono::milliseconds(2));
 	}
 
 	gui::DestroyImGui();
 	gui::DestroyDevice();
 	gui::DestroyHWindow();
+	fout.close();
 
 	return 0;
 }

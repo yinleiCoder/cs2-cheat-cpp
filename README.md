@@ -1,6 +1,6 @@
-# CS2 Cheat With C++
+# CS2 Cheat - C++
 
-> Latest Update：2024.03.09 16:39
+> Latest Update：2024.04.15 15:14:00
 
 ![external](./external.png)
 
@@ -15,6 +15,7 @@
 - 枪后坐力补偿
 - 防闪光弹
 - 连跳
+- 跳越自动射击
 - 玩家当前移动速度监控
 - 玩家视野角度超广角
 - 通过雷达实现敌人与墙体的遮挡可见性检测
@@ -35,8 +36,8 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 	- Linker->System->SubSystem `Windows xxx`
 	- VC++ Directories->Include Directories `dependencies/ImGui`
 - Offsets:
-	- [offsets](https://github.com/a2x/cs2-dumper/blob/main/generated/offsets.hpp)
-	- [client.dll](https://github.com/a2x/cs2-dumper/blob/main/generated/client.dll.hpp)
+	- [offsets](https://github.com/a2x/cs2-dumper/blob/main/output/offsets.hpp)
+	- [client.dll](https://github.com/a2x/cs2-dumper/blob/main/output/client.dll.hpp)
 - Packages:
 	- [ImGui](https://github.com/ocornut/imgui)
 	- [source2sdk](https://github.com/neverlosecc/source2sdk/tree/cs2/sdk)
@@ -48,7 +49,3 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 ## Thanks
 
 ![wechat](./wechat.jpg)
-
-## 免责声明
-
-本外挂功能薄弱，请勿用于商业盈利及真实匹配对局，本代码仅供学习交流参考使用，一切后果请自行承担！！！

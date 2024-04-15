@@ -18,8 +18,9 @@ ImU32 Color(RGB color, float alpha)
 namespace render
 {
 
-	static RGB enemy = { 255, 0, 0 };
+	static RGB enemy = { 0, 0, 0 };
 	static RGB hp = { 0, 255, 0 };
+	static RGB hpText = { 255, 255, 255 };
 	static RGB name = { 255, 255, 255 };
 	static RGB weapon = { 255, 255, 255 };
 	static RGB bone = { 255, 255, 255 };

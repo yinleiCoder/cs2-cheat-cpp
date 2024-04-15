@@ -19,12 +19,12 @@ namespace gui
 	inline bool enableRadar = false;// 雷达
 	inline bool enableFlash = true; // 防闪光
 	inline bool enableBhop = false;// 连跳
+	inline bool enableWeapon = true; // 显示玩家当前的武器
 	inline int fov = 0;// 视野角度
 	inline int speed = 0;// 当前速度
 	inline int maxSpeed = 0;// 最大速度
 	inline bool enableBombPlanted = false; // 炸弹是否已安放
 	inline int bombTimeLeft = -1; // 炸弹爆炸倒计时
-	inline bool enableWeapon = true; // 显示玩家当前的武器
 
 	// win32api window相关变量
 	inline HWND overlay = nullptr;

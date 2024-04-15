@@ -13,7 +13,6 @@ Memory::Memory(const char* processName)
 		if (!strcmp(processName, entry.szExeFile))
 		{
 			this->processId = entry.th32ProcessID;
-			//this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);
 			this->process = hj::HijackExistingHandle(this->processId);
 			if (!hj::IsHandleValid(this->process)) {
 				this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);

@@ -44,20 +44,19 @@ E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(38,60): warning C42
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\render.h(38,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
   (编译源文件“src/main.cpp”)
   
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(245,7): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(243,7): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(242,7): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(241,17): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(240,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(251,17): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(250,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(260,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(259,17): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(273,7): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(271,14): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(269,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(268,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
-E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(359,25): warning C4244: “=”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(249,14): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(248,7): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(247,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(246,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(257,17): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(256,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(266,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(265,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(279,7): warning C4244: “参数”: 从“double”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(277,48): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(275,54): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(274,20): warning C4244: “参数”: 从“float”转换到“int”，可能丢失数据
+E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\main.cpp(380,25): warning C4244: “=”: 从“float”转换到“int”，可能丢失数据
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(43): warning C4172: 返回局部变量或临时变量的地址
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(63): warning C4172: 返回局部变量或临时变量的地址
 E:\VisualStudioProjects\CS2CheatCpp\CS2CheatCpp\src\vector.h(38): warning C4172: 返回局部变量或临时变量的地址

@@ -21,6 +21,7 @@ public:
 	const char* currentWeaponName;
 	bool spotted;
 	Vector3 head;
+	uintptr_t boneMatrix = 0;
 	Vector3 origin;
 	Vector3 viewOffset;
 	Vector3 aimPunch;
