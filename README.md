@@ -1,6 +1,6 @@
 # CS2 Cheat - C++
 
-> Latest Update：2024.04.15 15:14:00
+> Latest Update：2024.04.18 15:08:00
 
 ![external](./external.png)
 
