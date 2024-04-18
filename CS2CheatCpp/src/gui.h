@@ -13,13 +13,14 @@ namespace gui
 	inline bool enableBoneEsp = true;// 骨骼透视
 	inline bool enableBodyGlow = false;// 玩家身体发光
 	inline bool enableHealth = true;// 玩家血量
-	inline bool enableAimbot = false;// 自瞄锁头
-	inline bool enableAutoAttack = false;// 自瞄锁头并开枪
-	inline bool enableRcs = false; // 后座力补偿
+	inline bool enableAimbot = true;// 自瞄锁头
+	inline bool enableAutoAttack = true;// 自瞄锁头并开枪
+	inline bool enableRcs = true; // 后座力补偿
 	inline bool enableRadar = false;// 雷达
 	inline bool enableFlash = true; // 防闪光
 	inline bool enableBhop = false;// 连跳
 	inline bool enableWeapon = true; // 显示玩家当前的武器
+	inline bool enableTeamMode = true; // 团队模式
 	inline int fov = 0;// 视野角度
 	inline int speed = 0;// 当前速度
 	inline int maxSpeed = 0;// 最大速度

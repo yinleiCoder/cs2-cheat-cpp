@@ -5,7 +5,7 @@
 extern int screenWidth;
 extern int screenHeight;
 
-struct view_matrix_t
+struct viewMatrix
 {
 	float matrix[4][4];
 
@@ -33,14 +33,14 @@ struct Vector3
 		const float y = 0.f,
 		const float z = 0.f) noexcept : x(x), y(y), z(z) {}
 
-	constexpr const Vector3& operator-(const Vector3& other) const noexcept
-	{
-		return Vector3{ x - other.x, y - other.y, z - other.z };
-	}
-
 	constexpr const Vector3& operator+(const Vector3& other) const noexcept
 	{
 		return Vector3{ x + other.x, y + other.y, z + other.z };
+	}
+
+	constexpr const Vector3& operator-(const Vector3& other) const noexcept
+	{
+		return Vector3{ x - other.x, y - other.y, z - other.z };
 	}
 
 	constexpr const Vector3& operator*(const Vector3& other) const noexcept
@@ -85,28 +85,26 @@ struct Vector3
 		return {yaw, pitch, 0};
 	}
 
-	const static bool word_to_screen(view_matrix_t matrix, Vector3& in, Vector3& out)
+	const static bool w2s(viewMatrix matrix, const Vector3& world, Vector3& screen)
 	{
-		out.x= matrix[0][0] * in.x + matrix[0][1] * in.y + matrix[0][2] * in.z + matrix[0][3];
-		out.y = matrix[1][0] * in.x + matrix[1][1] * in.y + matrix[1][2] * in.z + matrix[1][3];
-		float w = matrix[3][0] * in.x + matrix[3][1] * in.y + matrix[3][2] * in.z + matrix[3][3];
+		screen.x= matrix[0][0] * world.x + matrix[0][1] * world.y + matrix[0][2] * world.z + matrix[0][3];
+		screen.y = matrix[1][0] * world.x + matrix[1][1] * world.y + matrix[1][2] * world.z + matrix[1][3];
+		float w = matrix[3][0] * world.x + matrix[3][1] * world.y + matrix[3][2] * world.z + matrix[3][3];
 
-		if (w<0.01f) {
-			return false;
-		}
+		if (w < 0.01f) return false;
 
 		float inv_w = 1.f / w;
-		out.x *= inv_w;
-		out.y *= inv_w;
+		screen.x *= inv_w;
+		screen.y *= inv_w;
 
 		float x = screenWidth / 2;
 		float y = screenHeight / 2;
 		
-		x += 0.5f * out.x * screenWidth + 0.5f;
-		y -= 0.5f * out.y * screenHeight + 0.5f;
+		x += 0.5f * screen.x * screenWidth + 0.5f;
+		y -= 0.5f * screen.y * screenHeight + 0.5f;
 
-		out.x = x;
-		out.y = y;
+		screen.x = x;
+		screen.y = y;
 		return true;
 	}
 };

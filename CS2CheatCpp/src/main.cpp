@@ -17,51 +17,9 @@
 #include "bone.hpp"
 #include "weapon.hpp"
 #include "entity.h"
-
-namespace offsets {
-	// offsets.hpp
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17361E8;
-	constexpr std::ptrdiff_t dwEntityList = 0x18C1DB8;
-	constexpr std::ptrdiff_t dwViewAngles = 0x192F940;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19231B0;
-	constexpr std::ptrdiff_t dwGameRules = 0x191EC70;
-	constexpr std::ptrdiff_t dwSensitivity = 0x191F9B8;
-	constexpr std::ptrdiff_t dwSensitivity_sensitivity = 0x40;
-
-	// server.dll.hpp
-	constexpr uint64_t IN_ATTACK = 0x1;
-	constexpr uint64_t IN_JUMP = 0x2;
-
-	// client.dll.hpp 
-	constexpr std::ptrdiff_t m_iHealth = 0x334; // int32_t
-	constexpr std::ptrdiff_t m_hPlayerPawn = 0x7E4; // CHandle<C_CSPlayerPawn>
-	constexpr std::ptrdiff_t m_iTeamNum = 0x3CB; // uint8_t
-	constexpr std::ptrdiff_t m_vOldOrigin = 0x127C; // Vector
-	constexpr std::ptrdiff_t m_flFlashBangTime = 0x14B8; // float C_CSPlayerPawnBase { // C_BasePlayerPawn
-	constexpr std::ptrdiff_t m_fFlags = 0x3D4; // uint32_t C_BaseEntity 
-	constexpr std::ptrdiff_t m_flDetectedByEnemySensorTime = 0x1440; // GameTime_t
-	constexpr std::ptrdiff_t m_iszPlayerName = 0x638; // char[128]
-	constexpr std::ptrdiff_t m_entitySpottedState = 0x1698; // EntitySpottedState_t C_CSPlayerPawnBase 
-	constexpr std::ptrdiff_t m_bSpotted = 0x8; // bool
-	constexpr std::ptrdiff_t m_iIDEntIndex = 0x15A4; // CEntityIndex
-	constexpr std::ptrdiff_t m_vecViewOffset = 0xC58; // CNetworkViewOffsetVector
-	constexpr std::ptrdiff_t m_lifeState = 0x338; // uint8_t
-	constexpr std::ptrdiff_t m_pGameSceneNode = 0x318; // CGameSceneNode*
-	constexpr std::ptrdiff_t m_modelState = 0x160; // CModelState
-	constexpr std::ptrdiff_t m_aimPunchAngle = 0x177C; // QAngle  C_CSPlayerPawn { // C_CSPlayerPawnBase
-	constexpr std::ptrdiff_t m_angEyeAngles = 0x1578; // QAngle
-	constexpr std::ptrdiff_t m_aimPunchCache = 0x17A0; // CUtlVector<QAngle>
-	constexpr std::ptrdiff_t m_iShotsFired = 0x147C; // int32_t C_CSPlayerPawnBase { // C_BasePlayerPawn
-	constexpr std::ptrdiff_t m_pCameraServices = 0x1138; // CPlayer_CameraServices*
-	constexpr std::ptrdiff_t m_iFOV = 0x210; // uint32_t
-	constexpr std::ptrdiff_t m_bIsScoped = 0x1400; // bool
-	constexpr std::ptrdiff_t m_vecAbsVelocity = 0x3D8; // Vector
-	constexpr std::ptrdiff_t m_bBombPlanted = 0x9DD; // bool C_CSGameRules 
-	constexpr std::ptrdiff_t m_pClippingWeapon = 0x1308; // C_CSWeaponBase*
-	constexpr std::ptrdiff_t m_iItemDefinitionIndex = 0x1BA; // uint16_t
-	constexpr std::ptrdiff_t m_AttributeManager = 0x1098; // C_AttributeContainer C_EconEntity
-	constexpr std::ptrdiff_t m_Item = 0x50; // C_EconItemView
-}
+#include "../SDK/client.dll.hpp"
+#include "../SDK/offsets.hpp"
+#include "../SDK/buttons.hpp"
 
 struct C_UTL_VECTOR
 {
@@ -76,6 +34,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 	std::ofstream fout(logFileName);
 	fout.seekp(std::ios::beg);
 	fout << "[Tip]: After running this program, please make sure to read the software usage instructions. If it doesn't work, please copy this log file record to the GitHub repository and submit an issue, or directly contact the author via WeChat at yl1099129793. The author has limited capacity and cannot synchronously update CS2 game patch. If urgently needed, you can fork this repository and modify offsets to build with the latest value." << std::endl;
+	fout << std::endl;
 
 	auto mem = Memory("cs2.exe");
 	if (mem.GetProcessHandle() == nullptr) 
@@ -123,38 +82,26 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		gui::Render();
 
 		// 处理外挂业务逻辑: 获取相关数据的地址
-		localPlayer.pawnAddress = mem.Read<uintptr_t>(client + offsets::dwLocalPlayerPawn);
-		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vOldOrigin);
-		localPlayer.viewOffset = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecViewOffset);
-		localPlayer.team = mem.Read<int>(localPlayer.pawnAddress + offsets::m_iTeamNum);
-		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress + offsets::m_iIDEntIndex);// 准星前的玩家id
-		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress + offsets::m_fFlags);// 玩家的fFlag
-		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime);//玩家遭受闪光的时间
-		localPlayer.velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);// 玩家移动速度
+		localPlayer.pawnAddress = mem.Read<uintptr_t>(client + cs2_dumper::offsets::client_dll::dwLocalPlayerPawn);
+		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BasePlayerPawn::m_vOldOrigin);
+		localPlayer.viewOffset = mem.Read<Vector3>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseModelEntity::m_vecViewOffset);
+		localPlayer.team = mem.Read<int>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iTeamNum);
+		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_iIDEntIndex);// 准星前的玩家id
+		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseEntity::m_fFlags);// 玩家的fFlag
+		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_flFlashBangTime);//玩家遭受闪光的时间
+		localPlayer.velocity = mem.Read<Vector3>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseEntity::m_vecAbsVelocity);// 玩家移动速度
 
-		const auto enity_list = mem.Read<uintptr_t>(client + offsets::dwEntityList);
-		view_matrix_t view_matrix = mem.Read<view_matrix_t>(client + offsets::dwViewMatrix);
-		uintptr_t gameRules = mem.Read<uintptr_t>(client + offsets::dwGameRules);
+		const auto enity_list = mem.Read<uintptr_t>(client + cs2_dumper::offsets::client_dll::dwEntityList);
+		viewMatrix view_matrix = mem.Read<viewMatrix>(client + cs2_dumper::offsets::client_dll::dwViewMatrix);
+		uintptr_t gameRules = mem.Read<uintptr_t>(client + cs2_dumper::offsets::client_dll::dwGameRules);
 
 		// c4炸弹倒计时
 		if (gameRules) 
 		{
-			bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
+			bombPlanted = mem.Read<bool>(gameRules + cs2_dumper::schemas::client_dll::C_CSGameRules::m_bBombPlanted);
 			if (bombPlanted)
 			{
 				gui::enableBombPlanted = true;
-				/*for (int i = 0;i < 40;i++)
-				{
-					bombPlanted = mem.Read<bool>(gameRules + offsets::m_bBombPlanted);
-					if (!bombPlanted) 
-					{
-						break;
-					}
-					gui::bombTimeLeft = 40 - i;
-					gui::bombPlanted = true;
-
-					std::this_thread::sleep_for(std::chrono::seconds(1));
-				}*/
 			}
 			else
 			{
@@ -174,27 +121,19 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 			// 根据entity_list获取第一个入口点
 			const auto list_entry = mem.Read<uintptr_t>(enity_list + (8 * (playerIndex & 0x7FFF) >> 9) + 16);// 16==0x10
-			if (!list_entry) 
-			{
-				continue;
-			}
+			if (!list_entry) continue;
 
 			// 获取currentController
 			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
-			if (!currentController) 
-			{
-				continue;
-			}
+			if (!currentController) continue;
 
 			// 通过currentController获取pawnHandle
-			const auto playerPawnHandle = mem.Read<uint32_t>(currentController + offsets::m_hPlayerPawn);
+			const auto playerPawnHandle = mem.Read<uint32_t>(currentController + cs2_dumper::schemas::client_dll::CCSPlayerController::m_hPlayerPawn);
+			if (!playerPawnHandle) continue;
 
 			// 通过pawnHandle和entityList获取第二个入口点和currentPawn
 			const auto list_entry2 = mem.Read<uintptr_t>(enity_list + 0x8 * ((playerPawnHandle & 0x7FFF) >> 9) + 16);// 16==0x10
-			if (!list_entry2) 
-			{
-				continue;
-			}
+			if (!list_entry2) continue;
 
 			const auto currentPawn = mem.Read<uintptr_t>(list_entry2 + 120 * (playerPawnHandle & 0x1FF));// 120==0x78
 
@@ -205,33 +144,29 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}
 
 			// 通过currentController获取团队编号、姓名等信息
-			int team = mem.Read<int>(currentController + offsets::m_iTeamNum);
-			// 猪队友
-			if (team == localPlayer.team) 
-			{
-				continue;
-			}
-			const auto playerName = mem.ReadString<128>(currentController + offsets::m_iszPlayerName);
+			int team = mem.Read<int>(currentController + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iTeamNum);
+
+			const auto playerName = mem.ReadString<128>(currentController + cs2_dumper::schemas::client_dll::CBasePlayerController::m_iszPlayerName);
 
 			// currentPawn有生命值、武器等信息,而玩家姓名在currentController下
-			int health = mem.Read<int>(currentPawn + offsets::m_iHealth);
-			const auto lifeState = mem.Read<unsigned int>(currentPawn + offsets::m_lifeState);
+			int health = mem.Read<int>(currentPawn + cs2_dumper::schemas::client_dll::C_BaseEntity::m_iHealth);
+			const auto lifeState = mem.Read<unsigned int>(currentPawn + cs2_dumper::schemas::client_dll::C_BaseEntity::m_lifeState);
 			if (health <= 0 || health > 100 || lifeState != 256) 
 			{
 				continue;
 			}
-			auto currentWeapon = mem.Read<uintptr_t>(currentPawn + offsets::m_pClippingWeapon);
-			short weaponDefinitionIndex = mem.Read<short>(currentWeapon + offsets::m_AttributeManager + offsets::m_Item + offsets::m_iItemDefinitionIndex);
+			auto currentWeapon = mem.Read<uintptr_t>(currentPawn + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_pClippingWeapon);
+			short weaponDefinitionIndex = mem.Read<short>(currentWeapon + cs2_dumper::schemas::client_dll::C_EconEntity::m_AttributeManager + cs2_dumper::schemas::client_dll::C_AttributeContainer::m_Item + cs2_dumper::schemas::client_dll::C_EconItemView::m_iItemDefinitionIndex);
 
 			// 获取雷达状态并设置敌人显示在雷达上
 			if (gui::enableRadar) 
 			{
-				mem.Write<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted, true);
+				mem.Write<bool>(currentPawn + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_entitySpottedState + cs2_dumper::schemas::client_dll::EntitySpottedState_t::m_bSpotted, true);
 			}
 
 			// 玩家身体发光
 			if (gui::enableBodyGlow) {
-				mem.Write<float>(currentPawn + offsets::m_flDetectedByEnemySensorTime, 86400);
+				mem.Write<float>(currentPawn + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_flDetectedByEnemySensorTime, 86400);
 			}
 			
 			Entity entity;
@@ -241,17 +176,17 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			entity.health = health;
 			entity.lifeState = lifeState;
 			entity.team = team;
-			entity.spotted = mem.Read<bool>(currentPawn + offsets::m_entitySpottedState + offsets::m_bSpotted);
-			entity.origin = mem.Read<Vector3>(currentPawn+offsets::m_vOldOrigin);
-			entity.viewOffset = mem.Read<Vector3>(currentPawn+offsets::m_vecViewOffset);
+			entity.spotted = mem.Read<bool>(currentPawn + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_entitySpottedState + cs2_dumper::schemas::client_dll::EntitySpottedState_t::m_bSpotted);
+			entity.origin = mem.Read<Vector3>(currentPawn + cs2_dumper::schemas::client_dll::C_BasePlayerPawn::m_vOldOrigin);
+			entity.viewOffset = mem.Read<Vector3>(currentPawn + cs2_dumper::schemas::client_dll::C_BaseModelEntity::m_vecViewOffset);
 			entity.distance = Vector3::distance(entity.origin, localPlayer.origin);
 			entity.currentWeaponIndex = weaponDefinitionIndex;
 			entity.currentWeaponName = getWeaponName(weaponDefinitionIndex);
 
 			// 获取玩家的头坐标实现锁头
-			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + offsets::m_pGameSceneNode);
+			const auto sceneNode = mem.Read<uintptr_t>(currentPawn + cs2_dumper::schemas::client_dll::C_BaseEntity::m_pGameSceneNode);
 			// 获取骨骼信息绘制玩家骨骼
-			entity.boneMatrix = mem.Read<uintptr_t>(sceneNode + offsets::m_modelState + 0x80);
+			entity.boneMatrix = mem.Read<uintptr_t>(sceneNode + cs2_dumper::schemas::client_dll::CSkeletonInstance::m_modelState + 0x80);
 			entity.head = mem.Read<Vector3>(entity.boneMatrix + bones::head * 32);
 
 			entities.push_back(entity);
@@ -260,12 +195,11 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		// 根据收集的数据进行绘制
 		for (auto& player : entities) 
 		{
-			// 准备绘制需要的数据
 			Vector3 screenPos;
 			Vector3 screenHead;
 
-			if (Vector3::word_to_screen(view_matrix, player.origin, screenPos) &&
-				Vector3::word_to_screen(view_matrix, player.head, screenHead) &&
+			if (Vector3::w2s(view_matrix, player.origin, screenPos) &&
+				Vector3::w2s(view_matrix, player.head, screenHead) &&
 				player.origin.x != 0) 
 			{
 				float height = screenPos.y - screenHead.y;
@@ -274,23 +208,47 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 				if (gui::enableBoxEsp) 
 				{
-					render::DrawRect(
-						screenHead.x - width / 2,
-						screenHead.y - headHeight,
-						width,
-						height + headHeight,
-						render::enemy,
-						1,
-						true,
-						100
-					);
-					render::DrawTextContent(
-						screenHead.x + width / 2,
-						screenHead.y,
-						render::name,
-						player.name.c_str()
-					);
+					if (gui::enableTeamMode) 
+					{
+						render::DrawRect(
+							screenHead.x - width / 2,
+							screenHead.y - headHeight,
+							width,
+							height + headHeight,
+							player.team == localPlayer.team ? render::boddy : render::enemy,
+							1,
+							true,
+							100
+						);
+					}
+					else 
+					{
+						render::DrawRect(
+							screenHead.x - width / 2,
+							screenHead.y - headHeight,
+							width,
+							height + headHeight,
+							render::enemy,
+							1,
+							true,
+							100
+						);
+					}
 				}
+
+				render::DrawTextContent(
+					screenHead.x,
+					screenHead.y - headHeight,
+					render::name,
+					player.name.c_str()
+				);
+
+				render::DrawTextContent(
+					screenHead.x,
+					screenHead.y - 2*headHeight,
+					render::distance,
+					std::to_string(player.distance).c_str()
+				);
 
 				if (gui::enableWeapon) 
 				{
@@ -333,17 +291,30 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 						Vector3 b1;
 						Vector3 b2;
-						Vector3::word_to_screen(view_matrix, vectorBone1, b1);
-						Vector3::word_to_screen(view_matrix, vectorBone2, b2);
-						render::Circle(
-							screenHead.x,
-							screenHead.y,
-							1,
-							render::bone,
-							false,
-							255
-						);
-						render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
+						Vector3::w2s(view_matrix, vectorBone1, b1);
+						Vector3::w2s(view_matrix, vectorBone2, b2);
+						if(gui::enableBoxEsp){
+							render::Circle(
+								screenHead.x,
+								screenHead.y,
+								1,
+								render::bone,
+								false,
+								255
+							);
+							render::Line(b1.x, b1.y, b2.x, b2.y, render::bone, 255, 1.5);
+						}
+						else {
+							render::Circle(
+								screenHead.x,
+								screenHead.y,
+								1,
+								player.team == localPlayer.team ? render::boddy : render::bone,
+								false,
+								255
+							);
+							render::Line(b1.x, b1.y, b2.x, b2.y, player.team == localPlayer.team ? render::boddy : render::bone, 255, 1.5);
+						}
 					}
 				}
 			}
@@ -352,24 +323,34 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		// 自瞄锁头并开枪
 		if (gui::enableAimbot && entities.size() > 0 && !gui::enableRadar && entities[0].spotted)
 		{
-			// 扫描距离我最近的敌人
-			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
-				return entity1.distance < entity2.distance;
+			std::vector<Entity> filteredEntities;
+			std::copy_if(entities.begin(), entities.end(), std::back_inserter(filteredEntities), [&localPlayer](const Entity& entity) {
+					if (gui::enableTeamMode)
+					{
+						return entity.team != localPlayer.team;
+					}
+					else
+					{
+						return true;
+					}
+				});
+			std::stable_sort(filteredEntities.begin(), filteredEntities.end(), [](const Entity& entity1, const Entity& entity2) {
+					return entity1.distance < entity2.distance;
 				});
 
 			// 计算自瞄需要偏移的角度
 			Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
 			//Vector3 entityView = entities[0].origin + entities[0].viewOffset;
-			Vector3 newAngles = Vector3::angles(playerView, entities[0].head);
+			Vector3 newAngles = Vector3::angles(playerView, filteredEntities[0].head);
 			Vector3 newAnglesVec3{newAngles.y, newAngles.x, 0.0f};
-			mem.Write<Vector3>(client + offsets::dwViewAngles, newAnglesVec3);
+			mem.Write<Vector3>(client + cs2_dumper::offsets::client_dll::dwViewAngles, newAnglesVec3);
 
 			// 开枪
 			if (gui::enableAutoAttack && localPlayer.entIndex > 0)
 			{
-				//mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
+				mem.Write<int>(client + cs2_dumper::buttons::attack, PLUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				//mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
+				mem.Write<int>(client + cs2_dumper::buttons::attack, MINUS_ATTACK);
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 		}
@@ -377,7 +358,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		// 防闪光弹
 		if (gui::enableFlash && localPlayer.flashDuration > 0)
 		{
-			mem.Write<float>(localPlayer.pawnAddress + offsets::m_flFlashBangTime, 0);
+			mem.Write<float>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_flFlashBangTime, 0);
 		}
 
 		// 连跳
@@ -386,35 +367,35 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (localPlayer.fFlag == STANDING || localPlayer.fFlag == CROUCHING)
 			{
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
-				//mem.Write<unsigned int>(client + offsets::dwForceJump, PLUS_JUMP);
+				mem.Write<unsigned int>(client + cs2_dumper::buttons::jump, PLUS_JUMP);
 			}
 			else
 			{
-				//mem.Write<unsigned int>(client + offsets::dwForceJump, MINUS_JUMP);
+				mem.Write<unsigned int>(client + cs2_dumper::buttons::jump, MINUS_JUMP);
 			}
 		}
 
 		// 跳越射击
 		if (localPlayer.fFlag == INAIR && GetAsyncKeyState(VK_SPACE) & 0x01)
 		{
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
-			velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);
+			std::this_thread::sleep_for(std::chrono::milliseconds(3));
+			velocity = mem.Read<Vector3>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseEntity::m_vecAbsVelocity);
 			while (velocity.z > 18 || velocity.z < -18) {
-				velocity = mem.Read<Vector3>(localPlayer.pawnAddress + offsets::m_vecAbsVelocity);
+				velocity = mem.Read<Vector3>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BaseEntity::m_vecAbsVelocity);
 			}
-			//mem.Write<int>(client + offsets::dwForceAttack, PLUS_ATTACK);
-			std::this_thread::sleep_for(std::chrono::milliseconds(2));
-			//mem.Write<int>(client + offsets::dwForceAttack, MINUS_ATTACK);
+			mem.Write<int>(client + cs2_dumper::buttons::attack, PLUS_ATTACK);
+			std::this_thread::sleep_for(std::chrono::milliseconds(1));
+			mem.Write<int>(client + cs2_dumper::buttons::attack, MINUS_ATTACK);
 		}
 
 		// fov视野角度(相机Service)
 		auto desiredFov = static_cast<unsigned int>(gui::fov);
-		localPlayer.cameraServices = mem.Read<uintptr_t>(localPlayer.pawnAddress + offsets::m_pCameraServices);
-		unsigned int currentFov = mem.Read<unsigned int>(localPlayer.cameraServices + offsets::m_iFOV);
-		bool isScoped = mem.Read<bool>(localPlayer.pawnAddress + offsets::m_bIsScoped);
+		localPlayer.cameraServices = mem.Read<uintptr_t>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_BasePlayerPawn::m_pCameraServices);
+		unsigned int currentFov = mem.Read<unsigned int>(localPlayer.cameraServices + cs2_dumper::schemas::client_dll::CCSPlayerBase_CameraServices::m_iFOV);
+		bool isScoped = mem.Read<bool>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_bIsScoped);
 		if (!isScoped && currentFov != desiredFov)
 		{
-			mem.Write<unsigned int>(localPlayer.cameraServices + offsets::m_iFOV, desiredFov);
+			mem.Write<unsigned int>(localPlayer.cameraServices + cs2_dumper::schemas::client_dll::CCSPlayerBase_CameraServices::m_iFOV, desiredFov);
 		}
 
 		// 玩家暴走
@@ -423,10 +404,10 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		// 后坐力补偿
 		if (gui::enableRcs)
 		{
-			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + offsets::m_iShotsFired);// 开枪次数
-			auto sensPointer = mem.Read<uintptr_t>(client + offsets::dwSensitivity);
-			auto sensitivity = mem.Read<float>(sensPointer + offsets::dwSensitivity_sensitivity);
-			auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + offsets::m_aimPunchCache);
+			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawnBase::m_iShotsFired);// 开枪次数
+			auto sensPointer = mem.Read<uintptr_t>(client + cs2_dumper::offsets::client_dll::dwSensitivity);
+			auto sensitivity = mem.Read<float>(sensPointer + cs2_dumper::offsets::client_dll::dwSensitivity_sensitivity);
+			auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + cs2_dumper::schemas::client_dll::C_CSPlayerPawn::m_aimPunchCache);
 			if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) 
 			{
 				localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data + (aimPunchCache.count - 1) * sizeof(Vector3));
@@ -436,7 +417,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			}
 			if (shotsFired > 1)
 			{// 如果我们开枪了，就计算后坐力补偿
-				Vector3 viewAngles = mem.Read<Vector3>(client + offsets::dwViewAngles);
+				Vector3 viewAngles = mem.Read<Vector3>(client + cs2_dumper::offsets::client_dll::dwViewAngles);
 				Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
 
 				int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));

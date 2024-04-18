@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -168,6 +168,9 @@
     <ClInclude Include="dependencies\ImGui\imstb_textedit.h" />
     <ClInclude Include="dependencies\ImGui\imstb_truetype.h" />
     <ClInclude Include="resource1.h" />
+    <ClInclude Include="SDK\buttons.hpp" />
+    <ClInclude Include="SDK\client.dll.hpp" />
+    <ClInclude Include="SDK\offsets.hpp" />
     <ClInclude Include="src\bone.hpp" />
     <ClInclude Include="src\entity.h" />
     <ClInclude Include="src\gui.h" />

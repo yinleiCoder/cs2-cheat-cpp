@@ -19,9 +19,11 @@ namespace render
 {
 
 	static RGB enemy = { 0, 0, 0 };
+	static RGB boddy = { 255, 218, 116 };
 	static RGB hp = { 0, 255, 0 };
 	static RGB hpText = { 255, 255, 255 };
 	static RGB name = { 255, 255, 255 };
+	static RGB distance = { 255, 218, 116 };
 	static RGB weapon = { 255, 255, 255 };
 	static RGB bone = { 255, 255, 255 };
 

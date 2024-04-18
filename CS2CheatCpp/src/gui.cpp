@@ -273,8 +273,8 @@ void gui::Render() noexcept
 		{
 			ImGui::SeparatorText("Usage Instructions");
 			ImGui::TextWrapped("To show or hide this menu, press the key on the keyboard");
-			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " INSERT key");
-			ImGui::TextWrapped("Download the zip file and extract it to your computer.Enter the extracted folder, open the CS2 game, join a matchmaking session, and then double - click CS2Cheat.exe to run the program.");
+			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " INSERT key.");
+			ImGui::TextWrapped("Open the CS2 game, join a matchmaking session, and then double - click CS2Cheat.exe to run the program.");
 
 			ImGui::SeparatorText("Github Homepage");
 			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
@@ -306,6 +306,7 @@ void gui::Render() noexcept
 
 		ImGui::Text("Current movement speed: %d", speed);
 		ImGui::Text("Maximum movement speed: %d", maxSpeed);
+		ImGui::Checkbox("Team mode", &enableTeamMode);
 		ImGui::Checkbox("Box perspective", &enableBoxEsp);
 		ImGui::Checkbox("Bone perspective", &enableBoneEsp);
 		ImGui::Checkbox("Body glow", &enableBodyGlow);
