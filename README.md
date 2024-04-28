@@ -54,11 +54,11 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 
 ## Star History
 
-<a href="https://star-history.com/#cs2-cheat-cpp/cs2-cheat-cpp&yinleiCoder/cs2-cheat-cpp">
+<a href="https://star-history.com/#yinleiCoder/cs2-cheat-cpp">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp&theme=dark" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=yinleiCoder/cs2-cheat-cpp&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=yinleiCoder/cs2-cheat-cpp" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=yinleiCoder/cs2-cheat-cpp" />
  </picture>
 </a>
 
