@@ -1,8 +1,8 @@
+#include <corecrt_math.h>
 #include "gui.h"
 #include "../dependencies/ImGui/imgui.h"
 #include "../dependencies/ImGui/imgui_impl_dx11.h"
 #include "../dependencies/ImGui/imgui_impl_win32.h"
-#include <corecrt_math.h>
 
 // ImGui Win32 Handler
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -42,14 +42,14 @@ void gui::CreateHWindow(const char* windowName, const char* className, HINSTANCE
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
 	windowClass.lpfnWndProc = window_procedure;
 	windowClass.hInstance = instance;// instance从WinMain入口获得
-	windowClass.lpszClassName = L"cs2yinlei"; // className
+	windowClass.lpszClassName = reinterpret_cast<LPCWSTR>(className);
 
 	RegisterClassExW(&windowClass);
 
 	overlay = CreateWindowExW(
 		WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_LAYERED,
 		windowClass.lpszClassName,
-		L"cs2yinlei",// windowName
+		reinterpret_cast<LPCWSTR>(windowName),
 		WS_POPUP,
 		0,
 		0,
@@ -224,114 +224,94 @@ void gui::EndRender() noexcept
 
 void gui::Render() noexcept
 {
-	static bool no_titlebar = true;
-	static bool no_scrollbar = false;
-	static bool no_menu = false;
-	static bool no_move = false;
-	static bool no_resize = false;
-	static bool no_collapse = false;
-	static bool no_nav = false;
-	static bool no_background = false;
-	static bool no_bring_to_front = false;
-	static bool unsaved_document = false;
-	ImGuiWindowFlags window_flags = 0;
-	if (no_titlebar)        window_flags |= ImGuiWindowFlags_NoTitleBar;
-	if (no_scrollbar)       window_flags |= ImGuiWindowFlags_NoScrollbar;
-	if (!no_menu)           window_flags |= ImGuiWindowFlags_MenuBar;
-	if (no_move)            window_flags |= ImGuiWindowFlags_NoMove;
-	if (no_resize)          window_flags |= ImGuiWindowFlags_NoResize;
-	if (no_collapse)        window_flags |= ImGuiWindowFlags_NoCollapse;
-	if (no_nav)             window_flags |= ImGuiWindowFlags_NoNav;
-	if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
-	if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
-	if (unsaved_document)   window_flags |= ImGuiWindowFlags_UnsavedDocument;
-
-	// 更新当前玩家最大速度
-	if (speed > maxSpeed) {
-		maxSpeed = speed;
-	}
-
 	if (menutoggle) {
-		//static bool show_demo_window = true;
-		//ImGui::ShowDemoWindow(&show_demo_window);
+		// 更新当前玩家最大速度
+		if (speed > maxSpeed) {
+			maxSpeed = speed;
+		}
+		static bool show_demo_window = true;
+		ImGui::ShowDemoWindow(&show_demo_window);
+		ImGuiWindowFlags window_flags = 0;
+		window_flags |= ImGuiWindowFlags_MenuBar;
 		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
-		ImGui::Begin("CS2 Cheat", 0, window_flags);
+		ImGui::Begin("CS2 ESP Cheat", 0, window_flags);
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("Menu"))
 			{
-				ImGui::MenuItem(("Exit"), NULL, &exit);
+				ImGui::MenuItem(("Quit"), NULL, &exit);
 				ImGui::EndMenu();
 			}
 			ImGui::EndMenuBar();
 		}
 
-		ImGui::Text("Runtime Environment: ImGui (%s) (%d)", IMGUI_VERSION, IMGUI_VERSION_NUM);
+		ImGui::Text("Runtime Environment: ImGui %s %d", IMGUI_VERSION, IMGUI_VERSION_NUM);
 		ImGui::Spacing();
 	
-		if (ImGui::CollapsingHeader("Must Read Before Use"))
+		if (ImGui::BeginTabBar("CS2 Cheat Functions"))
 		{
-			ImGui::SeparatorText("Usage Instructions");
-			ImGui::TextWrapped("To show or hide this menu, press the key on the keyboard");
-			ImGui::TextColored(ImVec4(1.0f, 0.f, 0.0f, 1.0f), " INSERT key.");
-			ImGui::TextWrapped("Open the CS2 game, join a matchmaking session, and then double - click CS2Cheat.exe to run the program.");
-
-			ImGui::SeparatorText("Github Homepage");
-			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
-
-			ImGui::SeparatorText("Software Download");
-			ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
-
-			ImGui::SeparatorText("Disclaimer");
-			ImGui::TextWrapped("This project is intended solely for C++ and reverse engineering enthusiasts for code reference and learning purposes.Please refrain from running this program in real match scenarios to avoid disrupting the fairness of the game.Do not use this software for commercial purposes or profit, and the author is not responsible for any consequences.Use it at your own risk");
-		}
-
-		if (ImGui::CollapsingHeader("Window Options"))
-		{
-			if (ImGui::BeginTable("split", 3))
+			if (ImGui::BeginTabItem("Usage"))
 			{
-				ImGui::TableNextColumn(); ImGui::Checkbox("No titlebar", &no_titlebar);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No scrollbar", &no_scrollbar);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No menu", &no_menu);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No move", &no_move);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No resize", &no_resize);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No collapse", &no_collapse);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No nav", &no_nav);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No background", &no_background);
-				ImGui::TableNextColumn(); ImGui::Checkbox("No bring to front", &no_bring_to_front);
-				ImGui::TableNextColumn(); ImGui::Checkbox("Unsaved document", &unsaved_document);
-				ImGui::EndTable();
+				ImGui::TextWrapped("1.Open the 'CS2' game and enter a game room.");
+				ImGui::TextWrapped("2.Once in the game room, double-click 'CS2CheatCpp.exe' to run the cheat program.");
+				ImGui::TextWrapped("3.After running the cheat program, the cheat program menu will appear. You can press the 'Insert'' key to show / hide it.");
+				ImGui::TextWrapped("4.If the cheat program menu doesn't appear, please submit a log file. Most likely, the offsets are out of sync with the official CS2 updates. You can clone the code and build it yourself.");
+				ImGui::TextWrapped("5.After each game, it's advisable to exit the cheat program first. Then, repeat the above steps when entering the game room again. This is because handle hijacking sometimes isn't very effective, at least in my experience, I've never been banned.");
+				ImGui::EndTabItem();
 			}
-		}
+			if (ImGui::BeginTabItem("Functions"))
+			{
+				ImGui::Columns(2);
+				ImGui::Checkbox("Team mode", &enableTeamMode);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("If you're currently in team mode, please check the box.");
+				}
+				ImGui::Checkbox("Box perspective", &enableBoxEsp);
+				ImGui::Checkbox("Bone perspective", &enableBoneEsp);
+				ImGui::Checkbox("Auto-aim (aimbot)", &enableAimbot);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("This option will lock onto the nearest enemy's head.");
+				}
+				ImGui::Checkbox("Automatic firing", &enableAutoAttack);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("This option will automatically fire within the field of view.");
+				}
+				ImGui::Checkbox("RCS (Recoil Control System) ", &enableRcs);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("This option will compensate for recoil in the first few shots. The algorithm needs improvement.");
+				}
+				ImGui::Checkbox("Radar", &enableRadar);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("This option will display a radar on the map showing all enemies.");
+				}
+				ImGui::NextColumn();
+				ImGui::Checkbox("Remaining health", &enableHealth);
+				ImGui::Checkbox("Weapon", &enableWeapon);
+				ImGui::Checkbox("Anti-flash", &enableFlash);
+				ImGui::Checkbox("Bunny hop", &enableBhop);
+				ImGui::SliderInt("fov (Field of view)", &fov, 0, 180);
+				static float color[] = { 1.f, 0.f, 0.f, 1.f };
+				ImGui::ColorEdit4("edit", color);
+				ImGui::Text("Current movement speed: %d", speed);
+				ImGui::Text("Maximum movement speed: %d", maxSpeed);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("About"))
+			{
+				ImGui::SeparatorText("Github Homepage");
+				ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");
 
-		ImGui::Text("Current movement speed: %d", speed);
-		ImGui::Text("Maximum movement speed: %d", maxSpeed);
-		ImGui::Checkbox("Team mode", &enableTeamMode);
-		ImGui::Checkbox("Box perspective", &enableBoxEsp);
-		ImGui::Checkbox("Bone perspective", &enableBoneEsp);
-		ImGui::Checkbox("Body glow", &enableBodyGlow);
-		ImGui::Checkbox("Remaining health", &enableHealth);
-		ImGui::SetItemTooltip("Health is displayed in real-time as a green rectangle next to the enemy");
-		ImGui::Checkbox("Weapon", &enableWeapon);
-		ImGui::Checkbox("Auto-aim (aimbot)", &enableAimbot);
-		ImGui::SetItemTooltip("This option requires the player to manually fire, or in conjunction with the automatic firing option. When combined with turning off the radar option, it enables visibility detection for enemies behind walls");
-		ImGui::Checkbox("Radar", &enableRadar);
-		ImGui::SetItemTooltip("This option will continuously display the radar for enemies on the map, but it will block visibility detection and auto-aim (aimbot)");
-		ImGui::Checkbox("Automatic firing", &enableAutoAttack);
-		ImGui::SetItemTooltip("This option needs to be enabled in conjunction with auto-aim (aimbot)");
-		ImGui::Checkbox("RCS (Recoil Control System) ", &enableRcs);
-		ImGui::Checkbox("Anti-flash", &enableFlash);
-		ImGui::Checkbox("Bunny hop", &enableBhop);
-		ImGui::SetItemTooltip("Hold down the space bar on the keyboard continuously");
-		ImGui::SliderInt("fov (Field of view)", &fov, 0, 180);
-		if (enableBombPlanted) {
-			ImGui::Text("The terrorist has planted the bomb. Time until explosion: %d seconds", bombTimeLeft);
+				ImGui::SeparatorText("Software Download");
+				ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp/releases");
+				ImGui::EndTabItem();
+			}
+			ImGui::EndTabBar();
 		}
-		else 
-		{
-			ImGui::Text("The terrorists haven't planted the bomb yet!!!");
-		}
-
 		ImGui::End();
 		SetWindowLong(overlay, GWL_EXSTYLE, WS_EX_TOPMOST | WS_EX_LAYERED);
 	}

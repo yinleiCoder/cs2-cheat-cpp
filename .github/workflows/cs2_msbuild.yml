@@ -31,10 +31,8 @@ jobs:
     - name: Show MSBuild Cpp Ouput
       working-directory: ${{env.GITHUB_WORKSPACE}}
       run:  | 
-         cd x64 
+         cd build
          dir
-         cd Release
-         dir 
       shell: cmd
 
     - name: Release CS2 Cheat 
@@ -44,6 +42,6 @@ jobs:
         body_path: CHANGELOG.txt
         # tag_name: CS2 Cheat
         files: |
-            ./x64/Release/CS2CheatCpp.exe
+            ./build/CS2CheatCpp.exe
         draft: false 
         prerelease: false

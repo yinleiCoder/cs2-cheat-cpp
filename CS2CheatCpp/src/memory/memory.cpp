@@ -14,7 +14,8 @@ Memory::Memory(const char* processName)
 		{
 			this->processId = entry.th32ProcessID;
 			this->process = hj::HijackExistingHandle(this->processId);
-			if (!hj::IsHandleValid(this->process)) {
+			if (!hj::IsHandleValid(this->process)) 
+			{
 				this->process = OpenProcess(PROCESS_ALL_ACCESS, false, this->processId);
 			}
 			break;
@@ -53,9 +54,8 @@ uintptr_t Memory::GetModuleAddress(const char* moduleName)
 	MODULEENTRY32 entry;
 	entry.dwSize = sizeof(MODULEENTRY32);
 
-	const auto snapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this->processId);
-
 	uintptr_t result = 0;
+	const auto snapShot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE, this->processId);
 	while (Module32Next(snapShot, &entry))
 	{
 		if (!strcmp(moduleName, entry.szModule))
@@ -79,7 +79,8 @@ bool Memory::InForeground()
 	char title[256];
 	GetWindowText(current, title, sizeof(title));
 
-	if (strstr(title, "反恐精英") != nullptr || strstr(title, "Counter") != nullptr) {
+	if (strstr(title, "反恐精英") != nullptr || strstr(title, "Counter") != nullptr) 
+	{
 		return true;
 	}
 	return false;

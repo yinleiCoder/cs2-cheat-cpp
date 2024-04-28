@@ -1,6 +1,6 @@
 # CS2 Cheat - C++
 
-> Latest Update：2024.04.18 15:08:00
+> Latest Update：2024.04.28 14:16
 
 ![external](./external.png)
 
@@ -8,43 +8,59 @@
 
 - 方框透视
 - 骨骼透视
-- 玩家身体发光
-- 地图扫描敌人雷达
-- 实时显示剩余血条、玩家名字、玩家持有的武器
-- 自瞄锁头并开枪射击
-- 枪后坐力补偿
-- 防闪光弹
+- 自瞄锁头
+- 枪后座力补偿
+- 跳越射击
 - 连跳
-- 跳越自动射击
-- 玩家当前移动速度监控
+- 防闪光弹
+- 地图扫描敌人雷达
+- 敌人雷达与墙体遮挡的可见性检测
+- 实时显示玩家剩余血条、名字、距离、持有的武器等信息
 - 玩家视野角度超广角
-- 通过雷达实现敌人与墙体的遮挡可见性检测
-- C4炸弹倒计时检测
 - 绕过VAC反作弊系统(用户模式句柄劫持，非DMA和内核)
 
-## Usage
+## Download
 
 See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for decorated Changelogs. Reading the changelogs is a good way to keep up to date with the things `CS2CheatCPP` has to offer, and maybe will give you ideas of some features that you've been ignoring until now!
 
-## Notices
+## Usage
+
+1. 打开`CS2`游戏，并进入游戏房间
+2. 进入游戏房间后，此时鼠标双击`CS2CheatCpp.exe`运行外挂程序
+3. 运行外挂程序后，会显示外挂程序菜单，可以按`Insert键`进行显示/隐藏
+4. 若没有显示外挂程序菜单，则请提交日志文件记录 - 多数可能为offsets与CS2官方更新不同步，可clone代码后自行构建
+5. 每局结束后，建议先退出外挂程序，等到再次进入游戏房间后重复上述步骤 - 因为`句柄劫持`有时候效果不是非常好，至少我没有被封过
+
+## Build
 
 - Change **LAUNCH OPTIONS**  with `-insecure` mode
 - VisualStudio 2022
 	- `Release` and Platform target `x64` because cs2 platform
 	- Character Set `Use Multi-Byte Character Set`
 	- Linker->Additional Dependencies `d3d11.lib`
-	- Linker->System->SubSystem `Windows xxx`
+	- Linker->System->SubSystem `Windows(/SUBSYSTEM:WINDOWS)`
 	- VC++ Directories->Include Directories `dependencies/ImGui`
 - Offsets:
 	- [offsets](https://github.com/a2x/cs2-dumper/blob/main/output/offsets.hpp)
 	- [client.dll](https://github.com/a2x/cs2-dumper/blob/main/output/client.dll.hpp)
+	- [buttons](https://github.com/a2x/cs2-dumper/blob/main/output/buttons.hpp)
 - Packages:
 	- [ImGui](https://github.com/ocornut/imgui)
 	- [source2sdk](https://github.com/neverlosecc/source2sdk/tree/cs2/sdk)
 - [Visual Key Code](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)
 - [unknowncheats](https://www.unknowncheats.me/forum/index.php)
+- [guidedhacking](https://guidedhacking.com/)
 - [句柄劫持绕过反作弊系统](https://github.com/Apxaey/Handle-Hijacking-Anti-Cheat-Bypass)
-- and so on
+
+## Star History
+
+<a href="https://star-history.com/#cs2-cheat-cpp/cs2-cheat-cpp&yinleiCoder/cs2-cheat-cpp&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp&type=Date" />
+ </picture>
+</a>
 
 ## Thanks
 

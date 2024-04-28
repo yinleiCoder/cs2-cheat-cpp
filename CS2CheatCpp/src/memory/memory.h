@@ -1,10 +1,10 @@
 #pragma once
 #include <iostream>
+#include <string>
+#include <vector>
 #include <Windows.h>
 #include <TlHelp32.h>
 #include <Psapi.h> 
-#include <string>
-#include <vector>
 
 class Memory
 {
@@ -15,13 +15,11 @@ public:
 	Memory(const char* processName);
 	~Memory();
 
-	DWORD GetProcessId();
-
-	HANDLE GetProcessHandle();
-
-	uintptr_t GetModuleAddress(const char* moduleName);
-
 	bool InForeground();
+
+	DWORD GetProcessId();
+	HANDLE GetProcessHandle();
+	uintptr_t GetModuleAddress(const char* moduleName);
 
 	template<typename T>
 	T Read(uintptr_t address)

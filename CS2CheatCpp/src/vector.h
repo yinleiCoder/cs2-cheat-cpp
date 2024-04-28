@@ -85,7 +85,7 @@ struct Vector3
 		return {yaw, pitch, 0};
 	}
 
-	const static bool w2s(viewMatrix matrix, const Vector3& world, Vector3& screen)
+	const static bool world_to_screen(viewMatrix matrix, const Vector3& world, Vector3& screen)
 	{
 		screen.x= matrix[0][0] * world.x + matrix[0][1] * world.y + matrix[0][2] * world.z + matrix[0][3];
 		screen.y = matrix[1][0] * world.x + matrix[1][1] * world.y + matrix[1][2] * world.z + matrix[1][3];
