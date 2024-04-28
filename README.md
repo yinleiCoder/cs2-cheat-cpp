@@ -1,8 +1,8 @@
 # CS2 Cheat - C++
 
-> Latest Update：2024.04.28 14:16
+> Latest Update：2024.04.28 16:46
 
-![external](./external.png)
+![esp](./esp.png)
 
 ## Features
 
@@ -54,11 +54,11 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 
 ## Star History
 
-<a href="https://star-history.com/#cs2-cheat-cpp/cs2-cheat-cpp&yinleiCoder/cs2-cheat-cpp&Date">
+<a href="https://star-history.com/#cs2-cheat-cpp/cs2-cheat-cpp&yinleiCoder/cs2-cheat-cpp">
  <picture>
    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp&theme=dark" />
    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp" />
-   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=cs2-cheat-cpp/cs2-cheat-cpp,yinleiCoder/cs2-cheat-cpp" />
  </picture>
 </a>
 

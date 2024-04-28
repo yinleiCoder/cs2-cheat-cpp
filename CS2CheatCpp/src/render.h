@@ -28,7 +28,7 @@ namespace render
 
 	void DrawTextContent(int x, int y, RGB color, const char* text_content)
 	{
-			ImGui::GetBackgroundDrawList()->AddText(ImVec2(x, y), ColorAlpha(color, 255), text_content);
+		ImGui::GetBackgroundDrawList()->AddText(ImVec2(x, y), ColorAlpha(color, 255), text_content);
 	}
 
 	void DrawRect(int x, int y, int w, int h, RGB color, int thickness, bool IsFilled, float alpha) 
@@ -54,5 +54,10 @@ namespace render
 		else {
 			ImGui::GetBackgroundDrawList()->AddCircleFilled(ImVec2(x, y), radius, ColorAlpha(color, alpha), 0);
 		}
+	}
+
+	void Circle(float x, float y, float radius, float* color,float thickness)
+	{
+		ImGui::GetBackgroundDrawList()->AddCircle(ImVec2(x, y), radius,  ImGui::ColorConvertFloat4ToU32(ImVec4(color[0], color[1], color[2], color[3])), 0, thickness);
 	}
 }

@@ -189,7 +189,7 @@ void gui::DestroyImGui() noexcept
 void gui::BeginRender() noexcept
 {
 	if (GetAsyncKeyState(VK_INSERT) & 1) {
-		menutoggle = !menutoggle;
+		menuToggle = !menuToggle;
 	}
 
 	MSG msg;
@@ -224,13 +224,13 @@ void gui::EndRender() noexcept
 
 void gui::Render() noexcept
 {
-	if (menutoggle) {
+	if (menuToggle) {
 		// 更新当前玩家最大速度
 		if (speed > maxSpeed) {
 			maxSpeed = speed;
 		}
-		static bool show_demo_window = true;
-		ImGui::ShowDemoWindow(&show_demo_window);
+		/*static bool show_demo_window = true;
+		ImGui::ShowDemoWindow(&show_demo_window);*/
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_MenuBar;
 		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
@@ -242,13 +242,20 @@ void gui::Render() noexcept
 				ImGui::MenuItem(("Quit"), NULL, &exit);
 				ImGui::EndMenu();
 			}
+			if (ImGui::BeginMenu("Insert key: Show/Hide"))
+			{
+				ImGui::MenuItem(("Show"), NULL, &menuToggle);
+				ImGui::EndMenu();
+			}
 			ImGui::EndMenuBar();
 		}
 
 		ImGui::Text("Runtime Environment: ImGui %s %d", IMGUI_VERSION, IMGUI_VERSION_NUM);
 		ImGui::Spacing();
+		ImGui::Text("Screen Configuration(default fullscreen): width %d px, height %d px", screenWidth, screenHeight);
+		ImGui::Spacing();
 	
-		if (ImGui::BeginTabBar("CS2 Cheat Functions"))
+		if (ImGui::BeginTabBar("CS2 ESP Cheat"))
 		{
 			if (ImGui::BeginTabItem("Usage"))
 			{
@@ -259,7 +266,7 @@ void gui::Render() noexcept
 				ImGui::TextWrapped("5.After each game, it's advisable to exit the cheat program first. Then, repeat the above steps when entering the game room again. This is because handle hijacking sometimes isn't very effective, at least in my experience, I've never been banned.");
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("Functions"))
+			if (ImGui::BeginTabItem("ESP Cheat"))
 			{
 				ImGui::Columns(2);
 				ImGui::Checkbox("Team mode", &enableTeamMode);
@@ -269,34 +276,38 @@ void gui::Render() noexcept
 				}
 				ImGui::Checkbox("Box perspective", &enableBoxEsp);
 				ImGui::Checkbox("Bone perspective", &enableBoneEsp);
-				ImGui::Checkbox("Auto-aim (aimbot)", &enableAimbot);
+				ImGui::Checkbox("Radar", &enableRadar);
 				if (ImGui::IsItemHovered())
 				{
-					ImGui::SetTooltip("This option will lock onto the nearest enemy's head.");
-				}
-				ImGui::Checkbox("Automatic firing", &enableAutoAttack);
-				if (ImGui::IsItemHovered())
-				{
-					ImGui::SetTooltip("This option will automatically fire within the field of view.");
+					ImGui::SetTooltip("This option will display a radar on the map showing all enemies.");
 				}
 				ImGui::Checkbox("RCS (Recoil Control System) ", &enableRcs);
 				if (ImGui::IsItemHovered())
 				{
 					ImGui::SetTooltip("This option will compensate for recoil in the first few shots. The algorithm needs improvement.");
 				}
-				ImGui::Checkbox("Radar", &enableRadar);
+				ImGui::Checkbox("Automatic firing", &enableAutoAttack);
 				if (ImGui::IsItemHovered())
 				{
-					ImGui::SetTooltip("This option will display a radar on the map showing all enemies.");
+					ImGui::SetTooltip("This option will automatically fire within the field of view.");
 				}
+				ImGui::Checkbox("Auto-aim (aimbot)", &enableAimbot);
+				if (ImGui::IsItemHovered())
+				{
+					ImGui::SetTooltip("This option will lock onto the nearest enemy's head.");
+				}
+				ImGui::SliderFloat("Fov Aimbot Pixel", &fovAimbot, 10.0f, 300.0f, "value = %.2f");
+				if (ImGui::CollapsingHeader("Fov aimbot pixel color"))
+				{
+					ImGui::ColorEdit4("fov circle color", fovAimbotColor);
+				}
+
 				ImGui::NextColumn();
 				ImGui::Checkbox("Remaining health", &enableHealth);
 				ImGui::Checkbox("Weapon", &enableWeapon);
 				ImGui::Checkbox("Anti-flash", &enableFlash);
 				ImGui::Checkbox("Bunny hop", &enableBhop);
 				ImGui::SliderInt("fov (Field of view)", &fov, 0, 180);
-				static float color[] = { 1.f, 0.f, 0.f, 1.f };
-				ImGui::ColorEdit4("edit", color);
 				ImGui::Text("Current movement speed: %d", speed);
 				ImGui::Text("Maximum movement speed: %d", maxSpeed);
 				ImGui::EndTabItem();

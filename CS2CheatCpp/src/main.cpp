@@ -86,7 +86,11 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 
 		gui::BeginRender();
 		gui::Render();
-
+		if (mem.GetProcessHandle() == nullptr)
+		{
+			gui::EndRender();
+			continue;
+		}
 		// 处理外挂业务逻辑: 获取相关数据的地址
 		localPlayer.pawnAddress = mem.Read<uintptr_t>(client + offsets::client_dll::dwLocalPlayerPawn);
 		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_BasePlayerPawn::m_vOldOrigin);
@@ -100,7 +104,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		const auto enity_list = mem.Read<uintptr_t>(client + offsets::client_dll::dwEntityList);
 		viewMatrix view_matrix = mem.Read<viewMatrix>(client + offsets::client_dll::dwViewMatrix);
 
-		// 处理外挂业务逻辑: 根据entityList找到currentPawn、currentController获取相关玩家信息，currentController下有pawnHandle，通过pawnHandle得到currentPawn
+		//处理外挂业务逻辑: 根据entityList找到currentPawn、currentController获取相关玩家信息，currentController下有pawnHandle，通过pawnHandle得到currentPawn
 		for (int playerIndex = 1; playerIndex < 64; ++playerIndex)
 		{
 			if (!mem.InForeground()) continue;
@@ -167,6 +171,10 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			// 获取骨骼信息绘制玩家骨骼
 			entity.boneMatrix = mem.Read<uintptr_t>(sceneNode + schemas::client_dll::CSkeletonInstance::m_modelState + 0x80);
 			entity.head = mem.Read<Vector3>(entity.boneMatrix + bones::head * 32);
+			Vector3 screenHead;
+			Vector3::world_to_screen(view_matrix, entity.head, screenHead);
+			entity.head2d = { screenHead.x, screenHead.y };
+			entity.pixelDistance = Vector2::distance(entity.head2d, Vector2{ static_cast<float>(screenWidth / 2), static_cast<float>(screenHeight / 2) });
 
 			entities.push_back(entity);
 		}
@@ -296,33 +304,32 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 						}
 					}
 				}
+
+				render::Circle(screenWidth / 2, screenHeight / 2, gui::fovAimbot, gui::fovAimbotColor, 1.0);
 			}
 		}
 
 		// 自瞄锁头并开枪
-		if (gui::enableAimbot && entities.size() > 0 && !gui::enableRadar && entities[0].spotted)
+		if (gui::enableAimbot && entities.size() > 0) // && !gui::enableRadar && entities[0].spotted
 		{
-			std::vector<Entity> filteredEntities;
-			std::copy_if(entities.begin(), entities.end(), std::back_inserter(filteredEntities), [&localPlayer](const Entity& entity) {
-					if (gui::enableTeamMode)
-					{
-						return entity.team != localPlayer.team;
-					}
-					else
-					{
-						return true;
-					}
+			if (gui::enableTeamMode)
+			{
+				entities.erase(std::remove_if(entities.begin(), entities.end(), [&](const Entity& entity) {
+					return entity.team == localPlayer.team;
+					}), entities.end());
+			}
+			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
+				return entity1.pixelDistance < entity2.pixelDistance;
 				});
-			std::stable_sort(filteredEntities.begin(), filteredEntities.end(), [](const Entity& entity1, const Entity& entity2) {
-					return entity1.distance < entity2.distance;
-				});
-
 			// 计算自瞄需要偏移的角度
-			Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
-			//Vector3 entityView = entities[0].origin + entities[0].viewOffset;
-			Vector3 newAngles = Vector3::angles(playerView, filteredEntities[0].head);
-			Vector3 newAnglesVec3{newAngles.y, newAngles.x, 0.0f};
-			mem.Write<Vector3>(client + offsets::client_dll::dwViewAngles, newAnglesVec3);
+			if (entities[0].pixelDistance < gui::fovAimbot)
+			{
+				Vector3 playerView = localPlayer.origin + localPlayer.viewOffset;
+				Vector3 entityView = entities[0].origin + entities[0].viewOffset;
+				Vector3 newAngles = Vector3::angles(playerView, entities[0].head);
+				Vector3 newAnglesVec3{ newAngles.y, newAngles.x, 0.0f };
+				mem.Write<Vector3>(client + offsets::client_dll::dwViewAngles, newAnglesVec3);
+			}
 
 			// 开枪
 			if (gui::enableAutoAttack && localPlayer.entIndex > 0)

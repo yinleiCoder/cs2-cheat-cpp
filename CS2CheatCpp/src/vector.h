@@ -20,8 +20,19 @@ struct Vector2
 	float x, y;
 
 	Vector2(
-		const float x = 0.f,
-		const float y = 0.f) noexcept : x(x), y(y) {}
+		float x = 0.f,
+		float y = 0.f) noexcept : x(x), y(y) {}
+
+	const Vector2& operator-(const Vector2& other) const noexcept
+	{
+		return Vector2{ x - other.x, y - other.y };
+	}
+
+	static float distance(const Vector2& from, const Vector2& to)
+	{
+		Vector2 res = from - to;
+		return std::sqrt(res.x * res.x + res.y * res.y);
+	}
 };
 
 struct Vector3 
@@ -66,7 +77,7 @@ struct Vector3
 	static float distance(const Vector3& from, const Vector3& to)
 	{
 		Vector3 res = from - to;
-		return std::sqrt(res.x * res.x + res.y * res.y+res.z * res.z);
+		return std::sqrt(res.x * res.x + res.y * res.y + res.z * res.z);
 	}
 
 	static Vector3 angles(const Vector3& from, const Vector3& to)
