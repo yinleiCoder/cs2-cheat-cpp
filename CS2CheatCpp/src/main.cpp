@@ -72,7 +72,8 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 	std::vector<Entity> entities;
 	entities.reserve(64);
 
-	static auto oldPunch = Vector3{};
+	static auto oldAngle = Vector3{};
+	static auto newAngle = Vector3{};
 	static auto velocity = Vector3{};
 
 	while (gui::exit) 
@@ -91,12 +92,12 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			gui::EndRender();
 			continue;
 		}
+
 		// 处理外挂业务逻辑: 获取相关数据的地址
 		localPlayer.pawnAddress = mem.Read<uintptr_t>(client + offsets::client_dll::dwLocalPlayerPawn);
 		localPlayer.origin = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_BasePlayerPawn::m_vOldOrigin);
 		localPlayer.viewOffset = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_BaseModelEntity::m_vecViewOffset);
 		localPlayer.team = mem.Read<int>(localPlayer.pawnAddress + schemas::client_dll::C_BaseEntity::m_iTeamNum);
-		localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawnBase::m_iIDEntIndex);// 准星前的玩家id
 		localPlayer.fFlag = mem.Read<unsigned int>(localPlayer.pawnAddress + schemas::client_dll::C_BaseEntity::m_fFlags);// 玩家的fFlag
 		localPlayer.flashDuration = mem.Read<float>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawnBase::m_flFlashBangTime);//玩家遭受闪光的时间
 		localPlayer.velocity = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_BaseEntity::m_vecAbsVelocity);// 玩家移动速度
@@ -110,11 +111,11 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			if (!mem.InForeground()) continue;
 
 			// 根据entity_list获取第一个入口点
-			const auto list_entry = mem.Read<uintptr_t>(enity_list + (8 * (playerIndex & 0x7FFF) >> 9) + 16);// 16==0x10
+			const auto list_entry = mem.Read<uintptr_t>(enity_list + (0x8 * (playerIndex & 0x7FFF) >> 9) + 0x10);
 			if (!list_entry) continue;
 
 			// 获取currentController
-			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));// 120==0x78
+			const auto currentController = mem.Read<uintptr_t>(list_entry + 120 * (playerIndex & 0x1FF));
 			if (!currentController) continue;
 
 			// 通过currentController获取pawnHandle
@@ -310,7 +311,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		// 自瞄锁头并开枪
-		if (gui::enableAimbot && entities.size() > 0) // && !gui::enableRadar && entities[0].spotted
+		if (gui::enableAimbot && entities.size() > 0) 
 		{
 			if (gui::enableTeamMode)
 			{
@@ -321,6 +322,8 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			std::stable_sort(entities.begin(), entities.end(), [](const Entity& entity1, const Entity& entity2) {
 				return entity1.pixelDistance < entity2.pixelDistance;
 				});
+
+			
 			// 计算自瞄需要偏移的角度
 			if (entities[0].pixelDistance < gui::fovAimbot)
 			{
@@ -331,13 +334,30 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 				mem.Write<Vector3>(client + offsets::client_dll::dwViewAngles, newAnglesVec3);
 			}
 
-			// 开枪
+			// 自动开枪 - 查找准星瞄准的敌人数据
+			// 枪口准星前的玩家实体index
+			localPlayer.entIndex = mem.Read<int>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawnBase::m_iIDEntIndex);
 			if (gui::enableAutoAttack && localPlayer.entIndex > 0)
 			{
-				mem.Write<int>(client + buttons::attack, PLUS_ATTACK);
-				std::this_thread::sleep_for(std::chrono::milliseconds(2));
-				mem.Write<int>(client + buttons::attack, MINUS_ATTACK);
-				std::this_thread::sleep_for(std::chrono::milliseconds(2));
+				const auto list_entry = mem.Read<uintptr_t>(enity_list + 0x8 * (localPlayer.entIndex >> 9) + 0x10);
+				const auto entity = mem.Read<uintptr_t>(list_entry + 120 * (localPlayer.entIndex & 0x1FF));
+				const auto enemyTeam = mem.Read<int>(entity + schemas::client_dll::C_BaseEntity::m_iTeamNum);
+				bool shouldShoot = false;
+				if (gui::enableTeamMode) 
+				{
+					if ( enemyTeam != localPlayer.team)
+						shouldShoot = true;
+				}
+				else 
+				{
+					shouldShoot = true;
+				}
+				if (shouldShoot) {
+					mem.Write<int>(client + buttons::attack, PLUS_ATTACK);
+					std::this_thread::sleep_for(std::chrono::milliseconds(2));
+					mem.Write<int>(client + buttons::attack, MINUS_ATTACK);
+					std::this_thread::sleep_for(std::chrono::milliseconds(1));
+				}
 			}
 		}
 
@@ -361,7 +381,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		}
 
 		// 跳越射击
-		if (localPlayer.fFlag == INAIR && GetAsyncKeyState(VK_SHIFT))
+		/*if (localPlayer.fFlag == INAIR && GetAsyncKeyState(VK_SHIFT))
 		{
 			std::this_thread::sleep_for(std::chrono::milliseconds(3));
 			velocity = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_BaseEntity::m_vecAbsVelocity);
@@ -371,7 +391,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 			mem.Write<int>(client + buttons::attack, PLUS_ATTACK);
 			std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			mem.Write<int>(client + buttons::attack, MINUS_ATTACK);
-		}
+		}*/
 
 		// fov视野角度(相机Service)
 		auto desiredFov = static_cast<unsigned int>(gui::fov);
@@ -390,30 +410,25 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 		if (gui::enableRcs)
 		{
 			const auto shotsFired = mem.Read<int32_t>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawn::m_iShotsFired);// 开枪次数
-			auto sensPointer = mem.Read<uintptr_t>(client + offsets::client_dll::dwSensitivity);
-			auto sensitivity = mem.Read<float>(sensPointer + offsets::client_dll::dwSensitivity_sensitivity);
-			auto aimPunchCache = mem.Read<C_UTL_VECTOR>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawn::m_aimPunchCache);
-			if (aimPunchCache.data && aimPunchCache.count > 0 && aimPunchCache.count < 0xFFFF) 
-			{
-				localPlayer.aimPunch = mem.Read<Vector3>(aimPunchCache.data + (aimPunchCache.count - 1) * sizeof(Vector3));
-			}
-			else 
-			{
-				continue;
-			}
+			// 如果开枪了，就计算后座力补偿
 			if (shotsFired > 1)
-			{// 如果开枪了，就计算后座力补偿
+			{
+				float m_pitch = 0.022;
+				float m_yaw = 0.022;
+				auto aimPunch = mem.Read<Vector3>(localPlayer.pawnAddress + schemas::client_dll::C_CSPlayerPawn::m_aimPunchAngle);
 				Vector3 viewAngles = mem.Read<Vector3>(client + offsets::client_dll::dwViewAngles);
-				Vector3 delta = viewAngles - (viewAngles + (oldPunch - (localPlayer.aimPunch * 2.0f)));
+				auto sensPointer = mem.Read<uintptr_t>(client + offsets::client_dll::dwSensitivity);
+				auto sensitivity = mem.Read<float>(sensPointer + offsets::client_dll::dwSensitivity_sensitivity);
+				newAngle.x = (aimPunch.y - oldAngle.y) * 2.f / (m_pitch * sensitivity) / 1;
+				newAngle.y = -(aimPunch.x - oldAngle.x) * 2.f / (m_yaw * sensitivity) / 1;
 
-				int mouse_angle_x = (int)(delta.x / (sensitivity*0.022f));
-				int mouse_angle_y = (int)(delta.y / (sensitivity*0.022f));
-				mouse_event(MOUSEEVENTF_MOVE, mouse_angle_x, -mouse_angle_y, 0, 0);
-				oldPunch = localPlayer.aimPunch * 2.0f;
+				mouse_event(MOUSEEVENTF_MOVE, -newAngle.x * -1, newAngle.y, 0, 0);
+
+				oldAngle = aimPunch;
 			}
 			else 
 			{
-				oldPunch.x = oldPunch.y = oldPunch.z = 0.f;
+				oldAngle.x = oldAngle.y = oldAngle.z = 0.f;
 			}
 		}
 
