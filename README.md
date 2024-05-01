@@ -4,7 +4,7 @@ This is a `CS2 ESP cheat` software written in C++.
 
 > Latest Update：2024.05.01 10:50
 
-![esp](./esp.png)
+![esp](./external.png)
 
 ## Features
 
