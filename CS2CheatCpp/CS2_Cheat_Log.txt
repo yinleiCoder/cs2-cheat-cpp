@@ -1,4 +1,4 @@
 [Tip]: After running this program, please make sure to read the software usage instructions. If it doesn't work, please copy this log file record to the GitHub repository and submit an issue, or directly contact the author via WeChat at yl1099129793. The author has limited capacity and cannot synchronously update CS2 game patch. If urgently needed, you can fork this repository and modify offsets to build with the latest value.
 
-[2024/04/29 22:36:00] cs2.exe's process id located at11308
-[2024/04/29 22:36:00] client.dll -> 0x7fffb69a0000
+[2024/05/01 10:59:41] cs2.exe's process id located at7172
+[2024/05/01 10:59:41] client.dll -> 0x7ffc93b70000

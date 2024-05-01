@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <corecrt_math.h>
 #include "gui.h"
 #include "../dependencies/ImGui/imgui.h"
@@ -177,6 +179,47 @@ void gui::CreateImGui() noexcept
 
 	ImGui_ImplWin32_Init(overlay);
 	ImGui_ImplDX11_Init(device, device_context);
+
+	ImGuiStyle& style = ImGui::GetStyle();
+	style.Alpha = 1.0;
+	style.WindowRounding = 3;
+	style.GrabRounding = 1;
+	style.GrabMinSize = 20;
+	style.FrameRounding = 3;
+
+	style.Colors[ImGuiCol_Text] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.00f, 0.40f, 0.41f, 1.00f);
+	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
+	style.Colors[ImGuiCol_Border] = ImVec4(0.00f, 1.00f, 1.00f, 0.65f);
+	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	style.Colors[ImGuiCol_FrameBg] = ImVec4(0.44f, 0.80f, 0.80f, 0.18f);
+	style.Colors[ImGuiCol_FrameBgHovered] = ImVec4(0.44f, 0.80f, 0.80f, 0.27f);
+	style.Colors[ImGuiCol_FrameBgActive] = ImVec4(0.44f, 0.81f, 0.86f, 0.66f);
+	style.Colors[ImGuiCol_TitleBg] = ImVec4(0.14f, 0.18f, 0.21f, 0.73f);
+	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.54f);
+	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.27f);
+	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.20f);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.22f, 0.29f, 0.30f, 0.71f);
+	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.44f);
+	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_CheckMark] = ImVec4(0.00f, 1.00f, 1.00f, 0.68f);
+	style.Colors[ImGuiCol_SliderGrab] = ImVec4(0.00f, 1.00f, 1.00f, 0.36f);
+	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.76f);
+	style.Colors[ImGuiCol_Button] = ImVec4(0.00f, 0.65f, 0.65f, 0.46f);
+	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(0.01f, 1.00f, 1.00f, 0.43f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.62f);
+	style.Colors[ImGuiCol_Header] = ImVec4(0.00f, 1.00f, 1.00f, 0.33f);
+	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.42f);
+	style.Colors[ImGuiCol_HeaderActive] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+	style.Colors[ImGuiCol_ResizeGrip] = ImVec4(0.00f, 1.00f, 1.00f, 0.54f);
+	style.Colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.00f, 1.00f, 1.00f, 0.74f);
+	style.Colors[ImGuiCol_ResizeGripActive] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_PlotLines] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_TextSelectedBg] = ImVec4(0.00f, 1.00f, 1.00f, 0.22f);
 }
 
 void gui::DestroyImGui() noexcept
@@ -224,6 +267,16 @@ void gui::EndRender() noexcept
 
 void gui::Render() noexcept
 {
+	// 水印
+	auto start = std::chrono::system_clock::now();
+	auto end = std::chrono::system_clock::now();
+	auto elasped_seconds = end - start;
+	auto end_time = std::chrono::system_clock::to_time_t(end);
+	ImGui::SetNextWindowPos({ 10, 10 });
+	ImGui::SetWindowSize(ImVec2(296, 50));
+	ImGui::Begin("watermark", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Text("yinlei | %s", std::ctime(&end_time));
+	ImGui::End();
 	if (menuToggle) {
 		// 更新当前玩家最大速度
 		if (speed > maxSpeed) {
@@ -233,7 +286,8 @@ void gui::Render() noexcept
 		ImGui::ShowDemoWindow(&show_demo_window);*/
 		ImGuiWindowFlags window_flags = 0;
 		window_flags |= ImGuiWindowFlags_MenuBar;
-		ImGui::SetNextWindowSize({ 600.f,500.f }, ImGuiCond_FirstUseEver);
+		window_flags |= ImGuiWindowFlags_NoCollapse;
+		ImGui::SetNextWindowSize(ImVec2(900, 450), ImGuiCond_FirstUseEver);
 		ImGui::Begin("CS2 ESP Cheat", 0, window_flags);
 		if (ImGui::BeginMenuBar())
 		{
@@ -312,7 +366,7 @@ void gui::Render() noexcept
 				ImGui::Text("Maximum movement speed: %d", maxSpeed);
 				ImGui::EndTabItem();
 			}
-			if (ImGui::BeginTabItem("About"))
+			if (ImGui::BeginTabItem("Misc"))
 			{
 				ImGui::SeparatorText("Github Homepage");
 				ImGui::TextWrapped("https://github.com/yinleiCoder/cs2-cheat-cpp");

@@ -3,6 +3,7 @@
 #include <dwmapi.h>
 #include <windowsx.h>
 #include <Windows.h>
+#include <chrono>
 
 namespace gui
 {

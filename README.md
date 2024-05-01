@@ -1,6 +1,8 @@
-# CS2 Cheat - C++
+# CS2 ESP Cheat - C++
 
-> Latest Update：2024.04.29 21:56
+This is a `CS2 ESP cheat` software written in C++.
+
+> Latest Update：2024.05.01 10:50
 
 ![esp](./esp.png)
 
@@ -24,11 +26,12 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 
 ## Usage
 
-1. 打开`CS2`游戏，并进入游戏房间
-2. 进入游戏房间后，此时鼠标双击`CS2CheatCpp.exe`运行外挂程序
-3. 运行外挂程序后，会显示外挂程序菜单，可以按`Insert键`进行显示/隐藏
-4. 若没有显示外挂程序菜单，则请提交日志文件记录 - 多数可能为offsets与CS2官方更新不同步，可clone代码后自行构建
-5. 每局结束后，建议先退出外挂程序，等到再次进入游戏房间后重复上述步骤 - 因为`句柄劫持`有时候效果不是非常好，至少我没有被封过
+1. 确保您的windows电脑上安装了`Directx` - 因为cs2游戏使用的是[directx 11](https://www.pcgamingwiki.com/wiki/Counter-Strike_2)
+2. 打开`CS2`游戏，并进入游戏房间
+3. 进入游戏房间后，此时鼠标双击`CS2CheatCpp.exe`运行外挂程序
+4. 运行外挂程序后，会显示外挂程序菜单，可以按`Insert键`进行显示/隐藏
+5. 若没有显示外挂程序菜单，则请提交日志文件记录 - 多数可能为offsets与CS2官方更新不同步，可clone代码后自行构建
+6. 【可选操作】每局结束后，建议先退出外挂程序，等到再次进入游戏房间后重复上述步骤 - 因为`句柄劫持`有时候效果不是非常好，至少我目前没有被封过
 
 ## Build
 
@@ -63,4 +66,7 @@ See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for 
 
 ## Thanks
 
+I am working on [CS2 Internal Cheat With ImGui Hook](https://github.com/yinleiCoder/cs2-cheat-internal) project，Welcome to star!!!
+
+请我喝杯咖啡？我正在编写`cs2内部外挂`，实现诸如换肤器等功能，感谢您的支持：
 ![wechat](./wechat.jpg)
