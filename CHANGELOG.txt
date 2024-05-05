@@ -1,9 +1,8 @@
 ﻿## Changes📣 
 
-最近更新于2024年05月01日 10:50
+最近更新于2024年05月03日 15:27
 
-- fixed 5月1日cs2官方游戏更新后的offsets
-- 优化ImGui的主题UI、添加时间水印
+- fixed 5月3日cs2官方游戏更新后的offsets同步问题
 
 ## Features
 
