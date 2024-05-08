@@ -23,19 +23,14 @@
 
 using namespace cs2_dumper;
 
-struct C_UTL_VECTOR
-{
-	DWORD_PTR count = 0;
-	DWORD_PTR data = 0;
-};
-
-
 INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 {
-	std::string logFileName = "CS2_Cheat_Log.txt";
+	std::string logFileName = "cs2_cheat_log.txt";
 	std::ofstream fout(logFileName);
 	fout.seekp(std::ios::beg);
-	fout << "[Tip]: After running this program, please make sure to read the software usage instructions. If it doesn't work, please copy this log file record to the GitHub repository and submit an issue, or directly contact the author via WeChat at yl1099129793. The author has limited capacity and cannot synchronously update CS2 game patch. If urgently needed, you can fork this repository and modify offsets to build with the latest value." << std::endl;
+	fout << "After running this software, please make sure to read the software usage instructions!" << std::endl;
+	fout << "If you are stuck in the use of the software, please update the latest offsets value which located sdk folder or submit an issue on Github!" << std::endl;
+	fout << "Support me? You can scan the WeiChat pay QR code or concat me yl1099129793. Thank you for your support!" << std::endl;
 	fout << std::endl;
 
 	auto mem = Memory("cs2.exe");
@@ -50,7 +45,7 @@ INT APIENTRY WinMain(HINSTANCE instance, HINSTANCE, PSTR, INT cmd_show)
 	} 
 	else
 	{
-		fout << "[" << ss.str() << "] " << "cs2.exe's process id located at" << mem.GetProcessId() << std::endl;
+		fout << "[" << ss.str() << "] " << "cs2.exe's process id located at " << mem.GetProcessId() << std::endl;
 	}
 
 	const auto client = mem.GetModuleAddress("client.dll");

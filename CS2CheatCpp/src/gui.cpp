@@ -277,6 +277,7 @@ void gui::Render() noexcept
 	ImGui::Begin("watermark", 0, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 	ImGui::Text("yinlei | %s", std::ctime(&end_time));
 	ImGui::End();
+
 	if (menuToggle) {
 		// 更新当前玩家最大速度
 		if (speed > maxSpeed) {

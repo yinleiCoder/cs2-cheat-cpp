@@ -2,7 +2,7 @@
 
 This is a `CS2 ESP cheat` software written in C++.
 
-> Latest Update：2024.05.03 15:27
+> Latest Update：2024.05.08 21:05
 
 ![esp](./external.png)
 
@@ -21,6 +21,12 @@ This is a `CS2 ESP cheat` software written in C++.
 - 绕过VAC反作弊系统(用户模式句柄劫持，非DMA和内核)
 
 ## Download
+
+```
+必看：如果您下载了软件运行后却没有效果，请务必安装Microsoft DirectX 11，且大多数原因是因为Offsets过时了。作者目前没有时间和精力同步更新cs2游戏的offsets，您可以选择自行构建，或者等待作者空余时间编写自动化脚本及时同步构建。
+若自行本地构建，请修改sdk文件夹下的offsets.hpp、client.dll.hpp、buttons.hpp。这3个文件的链接我已经贴到了下面的Build章节，请自行动手，
+目前作者随缘不及时更新维护，但一定会在每次游戏更新后不久内更新。重点将放在Internal、Knernal Driver以及和平精英手游的作弊软件开发，敬请期待，感谢您的支持！
+```
 
 See [Releases page](https://github.com/yinleiCoder/cs2-cheat-cpp/releases)  for decorated Changelogs. Reading the changelogs is a good way to keep up to date with the things `CS2CheatCPP` has to offer, and maybe will give you ideas of some features that you've been ignoring until now!
 
